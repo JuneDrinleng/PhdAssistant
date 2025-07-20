@@ -60,8 +60,8 @@ async function endFocus() {
   const end = new Date();
   try {
     await window.api.saveFocus({
-      start_time: toLocalStr(start),
-      end_time: toLocalStr(end),
+      start_time: toUtcStr(start),
+      end_time: toUtcStr(end),
       task,
     });
     toast("已记录专注：" + task);
@@ -406,6 +406,10 @@ function toLocalStr(d) {
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
     `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
   );
+}
+function toUtcStr(d) {
+  // 去掉毫秒可省几字节；如无所谓可直接 return d.toISOString();
+  return d.toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 function parseAny(str) {
   if (str.includes("T")) return new Date(str);

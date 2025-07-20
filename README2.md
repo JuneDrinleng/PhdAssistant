@@ -33,3 +33,4 @@ curl -X POST http://localhost:3000/focus \
 
 ~~~
 
+docker exec -it 1Panel-postgresql-FSmJ psql -U june -d PhdAssistant
