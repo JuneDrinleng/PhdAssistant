@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>标题</title>
+    <!-- Font Awesome 图标 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./frameless.css" />
+    <link rel="stylesheet" href="./panel.css" />
+  </head>
+  <body>
+    <div class="titlebar">
+      <div class="pin-toggle" onclick="togglePin()" title="置顶切换">
+        <i id="pin-icon" class="fa-solid fa-thumbtack"></i>
+      </div>
+      <div class="window-controls">
+        <div
+          class="btn min"
+          onclick="window.api.winControl('minimize')"
+          data-tooltip="最小化"
+        ></div>
+        <div
+          class="btn max"
+          onclick="window.api.winControl('maximize')"
+          data-tooltip="最大化"
+        ></div>
+        <div
+          class="btn close"
+          onclick="window.api.winControl('close')"
+          data-tooltip="关闭"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Toast 挂载点 -->
+    <div id="toast-container"></div>
+
+    <main class="canvas16x9">
+      <h1 class="card-title">功能菜单</h1>
+      <div class="menu-card">
+        <div class="menu-item" onclick="window.api.openWindow('settings')">
+          <i class="icon-settings"></i>
+          <span>设置</span>
+        </div>
+        </div>
+        <div class="menu-item" onclick="window.api.openWindow('dashboard')">
+          <i class="icon-electricity"></i>
+          <span>电费查询</span>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // ---------- Toast ----------
+      /**
+       * 轻量提示
+       * @param {string} msg
+       * @param {"success"|"error"} type
+       * @param {number} duration
+       */
+      function showToast(msg, type = "success", duration = 3000) {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+          <i class="fa-solid ${
+            type === "success" ? "fa-circle-check" : "fa-triangle-exclamation"
+          }"></i> ${msg}
+        `;
+        container.appendChild(toast);
+
+        // 触发动画
+        requestAnimationFrame(() => toast.classList.add("show"));
+
+        // 自动淡出并销毁
+        setTimeout(() => {
+          toast.classList.remove("show");
+          toast.addEventListener("transitionend", () => toast.remove());
+        }, duration);
+      }
+    </script>
+    <script src="./pin.js" defer></script>
+  </body>
+</html>

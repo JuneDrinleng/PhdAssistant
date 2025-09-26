@@ -12,6 +12,7 @@ const fs = require("fs");
 const { getElectricity } = require("./models/getElectricity.js");
 let apiBase = null;
 let settingsWindow = null; // ← 新增这一行
+let menuWindow = null; // 新增：菜单窗口
 let tray = null;
 /*------ ipc part --------*/
 ipcMain.on("win-control", (event, action) => {
@@ -153,6 +154,29 @@ ipcMain.handle("refresh-electricity", async (_evt, cfg) => {
     return { ok: false, error: e.message };
   }
 });
+
+ipcMain.on("open-window", (event, type) => {
+  const currentWindow = BrowserWindow.fromWebContents(event.sender);
+  console.log("Received open-window:", type); // 添加日志调试
+  switch (type) {
+    case "settings":
+      createSettingsWindow();
+      break;
+    case "vocabulary":
+      createWindows();
+      break;
+    case "focus":
+      createFocusWindow();
+      break;
+    case "dashboard":
+      createBillWindow();
+      break;
+  }
+  // Close menuWindow if it exists and is not the current window
+  if (menuWindow && menuWindow !== currentWindow) {
+    menuWindow.hide(); // Use close() instead of hide() to fully close
+  }
+});
 /*------ function part --------*/
 function createWindows() {
   let scale = 40;
@@ -177,6 +201,7 @@ function createTray() {
   tray = new Tray(iconPath);
 
   const contextMenu = Menu.buildFromTemplate([
+    { label: "📋 菜单", click: () => createMenuWindow() }, // 新增：菜单选项
     { label: "📕单词本", click: () => mainWindow?.show() },
     { label: "⏱️ 专注计时", click: () => createFocusWindow() },
     { label: "⚡ 电费记录", click: () => createBillWindow() },
@@ -338,7 +363,58 @@ function createFocusWindow() {
 
   focusWindow.on("closed", () => (focusWindow = null));
 }
+/*------ 新增：菜单窗口 --------*/
+function createMenuWindow() {
+  if (menuWindow) {
+    menuWindow.show();
+    return;
+  }
 
+  menuWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    title: "功能菜单",
+    resizable: false,
+    frame: false,
+    autoHideMenuBar: true,
+    icon: path.join(__dirname, "favicon.ico"),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  menuWindow.loadFile(path.join(__dirname, "./renderer/panel.html"));
+
+  menuWindow.webContents.on("did-finish-load", async () => {
+    try {
+      const apiBase = await mainWindow.webContents.executeJavaScript(
+        "localStorage.getItem('apiBase')"
+      );
+      const apiToken = await mainWindow.webContents.executeJavaScript(
+        "localStorage.getItem('apiToken')"
+      );
+
+      if (apiBase) {
+        await menuWindow.webContents.executeJavaScript(
+          `localStorage.setItem('apiBase', ${JSON.stringify(apiBase)});`
+        );
+      }
+      if (apiToken) {
+        await menuWindow.webContents.executeJavaScript(
+          `localStorage.setItem('apiToken', ${JSON.stringify(apiToken)});`
+        );
+      }
+    } catch (e) {
+      console.error("同步 localStorage 失败：", e);
+    }
+  });
+
+  menuWindow.on("closed", () => {
+    menuWindow = null;
+  });
+}
 /*------ app part --------*/
 
 app.on("will-quit", () => {

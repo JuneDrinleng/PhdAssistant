@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld("api", {
   importCSV: () => ipcRenderer.invoke("import-csv"),
   exportCSV: () => ipcRenderer.invoke("export-csv"),
   setApiBase: (url) => ipcRenderer.invoke("set-api-base", url),
-
+  openWindow: (type) => ipcRenderer.send("open-window", type),
   saveFocus: ({ start_time, end_time, task }) => {
     const api = localStorage.getItem("apiBase");
     const token = localStorage.getItem("apiToken");
