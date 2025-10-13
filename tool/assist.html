@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>专注时间管理器</title>
+    <link rel="icon" href="assets/favicon/favicon.ico" />
+    <link href="./assets.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>⏰ 专注时间管理器</h1>
+
+      <form id="focusForm">
+        <div class="form-group">
+          <label for="apiUrl">API URL</label>
+          <input
+            type="text"
+            id="apiUrl"
+            placeholder="https://api.example.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="apiKey">API Key</label>
+          <input
+            type="password"
+            id="apiKey"
+            placeholder="输入你的 API Key"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>时间选择</label>
+          <div class="time-group">
+            <div>
+              <label for="startTime" style="font-size: 12px; color: #888"
+                >开始时间</label
+              >
+              <input type="datetime-local" id="startTime" required />
+            </div>
+            <div>
+              <label for="endTime" style="font-size: 12px; color: #888"
+                >结束时间</label
+              >
+              <input type="datetime-local" id="endTime" required />
+            </div>
+          </div>
+          <div class="timezone-info" id="timezoneInfo"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="task">专注内容</label>
+          <textarea
+            id="task"
+            placeholder="描述你要专注的任务..."
+            required
+          ></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">🚀 发送专注计划</button>
+      </form>
+
+      <div id="message" class="message"></div>
+    </div>
+
+    <script src="./assist.js"></script>
+  </body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>专注时间管理器</title>
+    <link rel="icon" href="assets/favicon/favicon.ico" />
+    <link href="./index.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <!-- 侧边栏 - 添加 collapsed 类 -->
+    <div class="sidebar collapsed" id="sidebar">
+      <div class="sidebar-header">
+        <button class="toggle-btn" onclick="toggleSidebar()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18" />
+          </svg>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="switchPage('add')">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span>添加专注时间</span>
+        </button>
+
+        <button class="nav-item" onclick="switchPage('stats')">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3" />
+          </svg>
+          <span>统计</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+      <div class="main-header">
+        <!-- 展开按钮默认显示 -->
+        <button
+          class="expand-btn"
+          onclick="toggleSidebar()"
+          style="display: flex"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="content-wrapper">
+        <!-- 添加专注时间页面 -->
+        <div id="addPage" class="page active">
+          <div class="container">
+            <h1>⏰ 添加专注时间</h1>
+
+            <form id="focusForm">
+              <div class="form-group">
+                <label for="apiUrl">API URL</label>
+                <input
+                  type="text"
+                  id="apiUrl"
+                  placeholder="https://api.example.com"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input
+                  type="password"
+                  id="apiKey"
+                  placeholder="输入你的 API Key"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label>时间选择</label>
+                <div class="time-group">
+                  <div>
+                    <label for="startTime" style="font-size: 12px; color: #888"
+                      >开始时间</label
+                    >
+                    <input type="datetime-local" id="startTime" required />
+                  </div>
+                  <div>
+                    <label for="endTime" style="font-size: 12px; color: #888"
+                      >结束时间</label
+                    >
+                    <input type="datetime-local" id="endTime" required />
+                  </div>
+                </div>
+                <div class="timezone-info" id="timezoneInfo"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="task">专注内容</label>
+                <textarea
+                  id="task"
+                  placeholder="描述你要专注的任务..."
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" id="submitBtn">🚀 发送专注计划</button>
+            </form>
+
+            <div id="message" class="message"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 统计页面 -->
+      <div id="statsPage" class="page">
+        <div class="container">
+          <div class="stats-header">
+            <h1>📊 年度总结</h1>
+
+            <div class="form-group">
+              <label>统计时间范围</label>
+              <div class="time-group">
+                <div>
+                  <input type="date" id="statsStartDate" />
+                </div>
+                <div>
+                  <input type="date" id="statsEndDate" />
+                </div>
+              </div>
+            </div>
+
+            <button type="button" onclick="fetchStatistics()">
+              📈 生成统计
+            </button>
+
+            <div id="statsLoading" style="display: none">加载中...</div>
+
+            <div
+              id="statsError"
+              class="message error"
+              style="display: none"
+            ></div>
+          </div>
+
+          <div id="statsContent" style="display: none">
+            <!-- 1. 相遇时刻 -->
+            <div class="stat-card">
+              <h3>✨ 相遇时刻</h3>
+              <p id="firstFocusTime"></p>
+            </div>
+
+            <!-- 2. 总专注时间 -->
+            <div class="stat-card">
+              <h3>⏱️ 总专注时间</h3>
+              <p id="totalFocusTime"></p>
+            </div>
+
+            <!-- 3. 最花时间的任务 -->
+            <div class="stat-card">
+              <h3>🏆 最花时间的任务</h3>
+              <p id="topTask"></p>
+            </div>
+
+            <!-- 4. 最常见的专注时间段 -->
+            <div class="stat-card">
+              <h3>🕐 最常见时段</h3>
+              <p id="commonTimeSlot"></p>
+            </div>
+
+            <!-- 5. 最晚专注时刻 -->
+            <div class="stat-card">
+              <h3>🌙 最晚时刻</h3>
+              <p id="latestFocusTime"></p>
+            </div>
+
+            <!-- 6. 任务分布图 -->
+            <div class="stat-card">
+              <h3>📋 任务分布</h3>
+              <div class="chart-container">
+                <canvas id="taskChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 侧边栏切换功能
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const expandBtn = document.querySelector(".expand-btn");
+        const mainContent = document.querySelector(".main-content");
+
+        sidebar.classList.toggle("collapsed");
+
+        // 控制展开按钮的显示和主内容边距
+        if (sidebar.classList.contains("collapsed")) {
+          expandBtn.style.display = "flex";
+          mainContent.style.marginLeft = "0";
+        } else {
+          expandBtn.style.display = "none";
+          mainContent.style.marginLeft = "260px";
+        }
+      }
+
+      // 页面切换功能
+      function switchPage(pageName) {
+        const pages = document.querySelectorAll(".page");
+        const navItems = document.querySelectorAll(".nav-item");
+
+        pages.forEach((page) => page.classList.remove("active"));
+        navItems.forEach((item) => item.classList.remove("active"));
+
+        if (pageName === "add") {
+          document.getElementById("addPage").classList.add("active");
+          navItems[0].classList.add("active");
+        } else if (pageName === "stats") {
+          document.getElementById("statsPage").classList.add("active");
+          navItems[1].classList.add("active");
+        }
+      }
+    </script>
+    <script src="./assets.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="./statistic.js"></script>
+  </body>
+</html>
