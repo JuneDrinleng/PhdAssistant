@@ -1,5 +1,6 @@
 // ===== 统计页面功能 =====
 let chartInstance = null;
+let timeSlotChartInstance = null;
 
 // 获取统计数据
 async function fetchStatistics() {
@@ -47,7 +48,7 @@ async function fetchStatistics() {
       return;
     }
 
-    // 1. 先找到整个数据中最早的记录作为"相遇时刻"
+    // 1. 先找到整个数据中最早的记录作为"首次相遇"
     const sortedAllData = [...allData].sort(
       (a, b) => new Date(a.start_time) - new Date(b.start_time)
     );
@@ -80,6 +81,8 @@ async function fetchStatistics() {
       document.querySelector(".stats-header").style.display = "none";
     } else {
       content.style.display = "block";
+      // 移动端也隐藏时间选择器
+      document.querySelector(".stats-header").style.display = "none";
     }
   } catch (err) {
     loading.style.display = "none";
@@ -104,24 +107,38 @@ function isLateNight(date) {
 
 // 处理统计数据
 function processStatistics(data, firstEverFocus) {
-  // 1. 相遇时刻 - 使用整个数据集中最早的记录
+  // 1. 首次相遇 - 使用整个数据集中最早的记录
   document.getElementById(
     "firstFocusTime"
   ).textContent = `${firstEverFocus.toLocaleDateString("zh-CN", {
     year: "numeric",
     month: "long",
     day: "numeric",
-  })} ${firstEverFocus.toLocaleTimeString("zh-CN")}`;
+  })} ${firstEverFocus.toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
 
   // 2. 总专注时间和任务分布
   let totalMinutes = 0;
   const taskStats = {};
+  let longestSessionMinutes = 0;
+  const uniqueDays = new Set();
 
   data.forEach((item) => {
     const start = new Date(item.start_time);
     const end = new Date(item.end_time);
     const minutes = (end - start) / (1000 * 60);
     totalMinutes += minutes;
+
+    // 记录最长单次专注
+    if (minutes > longestSessionMinutes) {
+      longestSessionMinutes = minutes;
+    }
+
+    // 统计专注天数
+    const dateKey = start.toLocaleDateString("zh-CN");
+    uniqueDays.add(dateKey);
 
     // 统计任务分布
     const task = item.task || "未命名任务";
@@ -133,36 +150,45 @@ function processStatistics(data, firstEverFocus) {
   const mins = Math.round(totalMinutes % 60);
   document.getElementById(
     "totalFocusTime"
-  ).textContent = `${hours} 小时 ${mins} 分钟`;
+  ).textContent = `${hours}小时${mins}分钟`;
 
-  // 绘制饼状图
+  // 年度报告数据
+  document.getElementById("totalSessions").textContent = data.length;
+
+  const avgMinutes = Math.round(totalMinutes / data.length);
+  document.getElementById("avgDuration").textContent = `${avgMinutes}分钟`;
+
+  const longestHours = Math.floor(longestSessionMinutes / 60);
+  const longestMins = Math.round(longestSessionMinutes % 60);
+  document.getElementById("longestSession").textContent =
+    longestHours > 0
+      ? `${longestHours}小时${longestMins}分钟`
+      : `${longestMins}分钟`;
+
+  document.getElementById("activeDays").textContent = uniqueDays.size;
+
+  // 绘制任务分布饼状图
   drawTaskChart(taskStats);
 
-  // 3. 最常见的专注时间段
+  // 3. 活动时间段统计（柱状图）
   const timeSlots = {
-    "凌晨 (0-6点)": 0,
-    "早晨 (6-9点)": 0,
-    "上午 (9-12点)": 0,
-    "下午 (12-18点)": 0,
-    "晚上 (18-24点)": 0,
+    "凌晨\n0-6点": 0,
+    "早晨\n6-9点": 0,
+    "上午\n9-12点": 0,
+    "下午\n12-18点": 0,
+    "晚上\n18-24点": 0,
   };
 
   data.forEach((item) => {
     const hour = new Date(item.start_time).getHours();
-    if (hour >= 0 && hour < 6) timeSlots["凌晨 (0-6点)"]++;
-    else if (hour >= 6 && hour < 9) timeSlots["早晨 (6-9点)"]++;
-    else if (hour >= 9 && hour < 12) timeSlots["上午 (9-12点)"]++;
-    else if (hour >= 12 && hour < 18) timeSlots["下午 (12-18点)"]++;
-    else timeSlots["晚上 (18-24点)"]++;
+    if (hour >= 0 && hour < 6) timeSlots["凌晨\n0-6点"]++;
+    else if (hour >= 6 && hour < 9) timeSlots["早晨\n6-9点"]++;
+    else if (hour >= 9 && hour < 12) timeSlots["上午\n9-12点"]++;
+    else if (hour >= 12 && hour < 18) timeSlots["下午\n12-18点"]++;
+    else timeSlots["晚上\n18-24点"]++;
   });
 
-  const mostCommonSlot = Object.entries(timeSlots).sort(
-    (a, b) => b[1] - a[1]
-  )[0];
-
-  document.getElementById(
-    "commonTimeSlot"
-  ).textContent = `${mostCommonSlot[0]} (${mostCommonSlot[1]} 次)`;
+  drawTimeSlotChart(timeSlots);
 
   // 4. 最晚专注时刻 - 找到在23:00-05:00时间段内的专注记录
   const lateNightSessions = data.filter((item) => {
@@ -219,7 +245,7 @@ function processStatistics(data, firstEverFocus) {
 
     document.getElementById(
       "topTask"
-    ).textContent = `${taskName} (${taskHours}小时${taskMins}分钟)`;
+    ).textContent = `${taskName}\n${taskHours}小时${taskMins}分钟`;
   }
 }
 
@@ -271,9 +297,9 @@ function drawTaskChart(taskStats) {
         legend: {
           position: "bottom",
           labels: {
-            padding: 15,
+            padding: 10,
             font: {
-              size: 12,
+              size: 10,
             },
           },
         },
@@ -293,6 +319,82 @@ function drawTaskChart(taskStats) {
   });
 }
 
+// 绘制活动时间段柱状图
+function drawTimeSlotChart(timeSlots) {
+  const ctx = document.getElementById("timeSlotChart").getContext("2d");
+
+  // 销毁旧图表
+  if (timeSlotChartInstance) {
+    timeSlotChartInstance.destroy();
+  }
+
+  const labels = Object.keys(timeSlots);
+  const dataValues = Object.values(timeSlots);
+
+  timeSlotChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "专注次数",
+          data: dataValues,
+          backgroundColor: [
+            "rgba(102, 126, 234, 0.8)",
+            "rgba(250, 112, 154, 0.8)",
+            "rgba(254, 225, 64, 0.8)",
+            "rgba(67, 233, 123, 0.8)",
+            "rgba(118, 75, 162, 0.8)",
+          ],
+          borderColor: ["#667eea", "#fa709a", "#fee140", "#43e97b", "#764ba2"],
+          borderWidth: 2,
+          borderRadius: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              return `专注次数: ${context.parsed.y} 次`;
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            font: {
+              size: 12,
+            },
+          },
+          grid: {
+            color: "rgba(0, 0, 0, 0.05)",
+          },
+        },
+        x: {
+          ticks: {
+            font: {
+              size: 12,
+            },
+          },
+          grid: {
+            display: false,
+          },
+        },
+      },
+    },
+  });
+}
+
 // 窗口大小改变时更新display
 window.addEventListener("resize", () => {
   const content = document.getElementById("statsContent");
@@ -304,7 +406,8 @@ window.addEventListener("resize", () => {
       header.style.display = "none";
     } else {
       content.style.display = "block";
-      header.style.display = "block";
+      // 移动端显示内容时也隐藏选择器
+      header.style.display = "none";
     }
   }
 });

@@ -146,41 +146,66 @@
           </div>
 
           <div id="statsContent" style="display: none">
-            <!-- 1. 相遇时刻 -->
-            <div class="stat-card">
-              <h3>✨ 相遇时刻</h3>
+            <!-- 1. 首次相遇时刻 -->
+            <div class="stat-card card-first-meet">
+              <h3>✨ 首次相遇</h3>
               <p id="firstFocusTime"></p>
             </div>
 
             <!-- 2. 总专注时间 -->
-            <div class="stat-card">
-              <h3>⏱️ 总专注时间</h3>
+            <div class="stat-card card-total-time">
+              <h3>⏱️ 总时长</h3>
               <p id="totalFocusTime"></p>
             </div>
 
             <!-- 3. 最花时间的任务 -->
-            <div class="stat-card">
-              <h3>🏆 最花时间的任务</h3>
+            <div class="stat-card card-top-task">
+              <h3>🏆 最花时间</h3>
               <p id="topTask"></p>
             </div>
 
-            <!-- 4. 最常见的专注时间段 -->
-            <div class="stat-card">
-              <h3>🕐 最常见时段</h3>
-              <p id="commonTimeSlot"></p>
+            <!-- 4. 任务分布饼状图 -->
+            <div class="stat-card card-task-pie">
+              <h3>📊 任务分布</h3>
+              <div class="chart-container">
+                <canvas id="taskChart"></canvas>
+              </div>
             </div>
 
-            <!-- 5. 最晚专注时刻 -->
-            <div class="stat-card">
+            <!-- 5. 年度报告中心卡片 -->
+            <div class="stat-card card-annual-report">
+              <h2>🎉 年度报告</h2>
+              <div class="report-content">
+                <div class="report-item">
+                  <span class="report-label">总专注次数</span>
+                  <span class="report-value" id="totalSessions">0</span>
+                </div>
+                <div class="report-item">
+                  <span class="report-label">平均每次时长</span>
+                  <span class="report-value" id="avgDuration">0分钟</span>
+                </div>
+                <div class="report-item">
+                  <span class="report-label">最长单次专注</span>
+                  <span class="report-value" id="longestSession">0分钟</span>
+                </div>
+                <div class="report-item">
+                  <span class="report-label">专注天数</span>
+                  <span class="report-value" id="activeDays">0天</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. 最晚专注时刻 -->
+            <div class="stat-card card-latest">
               <h3>🌙 最晚时刻</h3>
               <p id="latestFocusTime"></p>
             </div>
 
-            <!-- 6. 任务分布图 -->
-            <div class="stat-card">
-              <h3>📋 任务分布</h3>
+            <!-- 7. 活动时间段柱状图 -->
+            <div class="stat-card card-time-bar">
+              <h3>📈 活动时间段统计</h3>
               <div class="chart-container">
-                <canvas id="taskChart"></canvas>
+                <canvas id="timeSlotChart"></canvas>
               </div>
             </div>
           </div>

@@ -288,11 +288,23 @@ button[type="button"]:disabled {
   padding: 30px;
   background: transparent;
   box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 80px);
+}
+
+/* 当有统计内容时,移除垂直居中 */
+#statsPage .container.has-content {
+  justify-content: flex-start;
+  min-height: auto;
 }
 
 /* 统计页面头部 */
 .stats-header {
   max-width: 600px;
+  width: 100%;
   margin: 0 auto 20px;
   background: white;
   padding: 30px;
@@ -338,16 +350,70 @@ button[type="button"]:disabled {
   font-size: 16px;
   color: #1d1d1f;
   line-height: 1.6;
+  white-space: pre-line;
+}
+
+/* 年度报告样式 - 移动端 */
+.card-annual-report h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #1d1d1f;
+}
+
+.report-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.report-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: center;
+}
+
+.report-label {
+  font-size: 12px;
+  color: #86868b;
+  font-weight: 500;
+}
+
+.report-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.card-annual-report {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-annual-report h2 {
+  color: white;
+}
+
+.card-annual-report .report-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-annual-report .report-value {
+  color: white;
 }
 
 /* 图表容器 */
 .chart-container {
   position: relative;
-  height: 280px;
+  height: 200px;
   margin-top: 15px;
 }
 
 #taskChart {
+  max-height: 100%;
+  width: 100%;
+}
+
+#timeSlotChart {
   max-height: 100%;
   width: 100%;
 }
@@ -363,14 +429,15 @@ button[type="button"]:disabled {
     padding: 20px;
   }
 
-  /* 桌面端：移除大容器背景，改为网格 */
+  /* 桌面端：改为网格 */
   #statsContent {
     background: transparent;
     padding: 0;
     box-shadow: none;
     max-width: 100%;
+    display: grid;
     grid-template-columns: repeat(6, 1fr);
-    grid-auto-rows: 200px;
+    grid-auto-rows: 140px;
     gap: 16px;
   }
 
@@ -383,6 +450,8 @@ button[type="button"]:disabled {
     transition: all 0.3s ease;
     border-bottom: none;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .stat-card:hover {
@@ -390,80 +459,164 @@ button[type="button"]:disabled {
     transform: translateY(-4px);
   }
 
-  /* 相遇时刻 - 左上角，2x2 */
-  .stat-card:nth-child(1) {
+  /* 第一行：三个卡片，各占2列 */
+
+  /* 首次相遇 - 左上，2x1 */
+  .card-first-meet {
     grid-column: span 2;
-    grid-row: span 2;
+    grid-row: span 1;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 
-  .stat-card:nth-child(1) h3,
-  .stat-card:nth-child(1) p {
+  .card-first-meet h3,
+  .card-first-meet p {
     color: white;
   }
 
-  /* 总专注时间 - 右上角大卡片，4x2 */
-  .stat-card:nth-child(2) {
-    grid-column: span 4;
-    grid-row: span 2;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  .card-first-meet p {
+    font-size: 14px;
+    line-height: 1.4;
   }
 
-  .stat-card:nth-child(2) h3,
-  .stat-card:nth-child(2) p {
-    color: white;
-  }
-
-  .stat-card:nth-child(2) p {
-    font-size: 56px;
-    font-weight: 700;
-    margin-top: 10px;
-  }
-
-  /* 最花时间的任务 - 左中，2x1 */
-  .stat-card:nth-child(3) {
+  /* 总时长 - 中上，2x1 */
+  .card-total-time {
     grid-column: span 2;
     grid-row: span 1;
-    background: #fff;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   }
 
-  /* 最常见的专注时间段 - 中间，2x1 */
-  .stat-card:nth-child(4) {
+  .card-total-time h3,
+  .card-total-time p {
+    color: white;
+  }
+
+  .card-total-time p {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: auto;
+  }
+
+  /* 最花时间 - 右上，2x1 */
+  .card-top-task {
     grid-column: span 2;
     grid-row: span 1;
     background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
   }
 
-  .stat-card:nth-child(4) h3,
-  .stat-card:nth-child(4) p {
+  .card-top-task h3,
+  .card-top-task p {
     color: white;
   }
 
-  /* 最晚专注时刻 - 右中，2x1 */
-  .stat-card:nth-child(5) {
-    grid-column: span 2;
-    grid-row: span 1;
+  .card-top-task p {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  /* 第二行：饼状图(左) + 年度报告(中心大卡) + 最晚时刻(右) */
+
+  /* 任务分布饼状图 - 左中，1x2 */
+  .card-task-pie {
+    grid-column: span 1;
+    grid-row: span 2;
+    background: #fff;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card-task-pie h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .card-task-pie .chart-container {
+    height: 180px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 年度报告 - 中心，4x2 */
+  .card-annual-report {
+    grid-column: span 4;
+    grid-row: span 2;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .card-annual-report h2 {
+    color: white;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+  }
+
+  .report-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .report-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .report-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .report-value {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  /* 最晚时刻 - 右中，1x2 */
+  .card-latest {
+    grid-column: span 1;
+    grid-row: span 2;
     background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 
-  .stat-card:nth-child(5) h3,
-  .stat-card:nth-child(5) p {
+  .card-latest h3,
+  .card-latest p {
     color: white;
   }
 
-  /* 任务分布图 - 底部全宽，6x2 */
-  .stat-card:nth-child(6) {
+  .card-latest p {
+    font-size: 24px;
+    font-weight: 600;
+    margin-top: 20px;
+  }
+
+  /* 第三行：活动时间段柱状图，全宽 */
+
+  /* 活动时间段柱状图 - 底部全宽，6x2 */
+  .card-time-bar {
     grid-column: span 6;
     grid-row: span 2;
     background: #fff;
   }
 
-  .chart-container {
-    height: 300px;
+  .card-time-bar h3 {
+    margin-bottom: 15px;
+  }
+
+  .card-time-bar .chart-container {
+    height: 180px;
+    flex: 1;
   }
 }
 
@@ -520,10 +673,5 @@ button[type="button"]:disabled {
 
   body {
     background: white;
-  }
-
-  /* 移动端确保时间选择器始终显示 */
-  .stats-header {
-    display: block !important;
   }
 }
