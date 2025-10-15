@@ -296,7 +296,13 @@
         </div>
       </div>
     </div>
-
+    <!-- 右键菜单（专注记录） -->
+    <div id="recordContextMenu" class="context-menu" style="display: none">
+      <button class="ctx-item" data-action="edit">✏️ 修改专注内容</button>
+      <button class="ctx-item danger" data-action="delete">
+        🗑️ 删除专注记录
+      </button>
+    </div>
     <!-- 页面脚本 -->
     <script src="./js/dashborad.js"></script>
     <script src="./js/focus.js"></script>
@@ -307,6 +313,7 @@
       });
     </script>
     <script src="./js/stats.js"></script>
+
     <!-- 放在 body 末尾任意位置都可以；Toast 用 fixed 定位 -->
     <div id="toast" class="toast" style="display: none"></div>
   </body>

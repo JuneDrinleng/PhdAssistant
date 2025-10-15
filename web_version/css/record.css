@@ -127,3 +127,31 @@
     justify-content: space-between;
   }
 }
+/* 右键菜单样式 */
+.context-menu {
+  position: fixed;
+  min-width: 160px;
+  background: var(--card-bg, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 9999;
+  padding: 6px;
+}
+.context-menu .ctx-item {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.context-menu .ctx-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.context-menu .ctx-item.danger {
+  color: #d11;
+}

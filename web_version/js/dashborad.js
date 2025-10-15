@@ -204,6 +204,131 @@ async function refreshRecords() {
     meta.textContent = "加载失败：" + e.message;
   }
 }
+// 简单的全局缓存：id -> 记录对象（供编辑时拿到原 start/end）
+window._focusCache = new Map();
+
+// 小提示（可用你已有的 toast 节点）
+function showToast(text, isError = false) {
+  const el = document.getElementById("toast");
+  if (!el) {
+    alert(text);
+    return;
+  }
+  el.textContent = text;
+  el.classList.toggle("error", !!isError);
+  el.style.display = "block";
+  clearTimeout(el._t);
+  el._t = setTimeout(() => (el.style.display = "none"), 1800);
+}
+
+// 右键菜单：在卡片上弹出
+function onRecordContextMenu(e) {
+  e.preventDefault();
+  const card = e.currentTarget;
+  const id = card.dataset.id;
+  const menu = document.getElementById("recordContextMenu");
+  if (!menu) return;
+
+  menu.dataset.recordId = id;
+  menu.style.display = "block";
+
+  // 放在鼠标附近，并避免溢出视口
+  const { clientWidth: vw, clientHeight: vh } = document.documentElement;
+  let x = e.clientX,
+    y = e.clientY;
+  // 先渲染一次再取尺寸
+  const rect = menu.getBoundingClientRect();
+  if (x + rect.width > vw) x = Math.max(0, vw - rect.width - 8);
+  if (y + rect.height > vh) y = Math.max(0, vh - rect.height - 8);
+  menu.style.left = x + "px";
+  menu.style.top = y + "px";
+}
+
+function hideRecordContextMenu() {
+  const menu = document.getElementById("recordContextMenu");
+  if (menu) menu.style.display = "none";
+}
+
+// 点击页面其他区域、滚动、缩放时关闭菜单
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("recordContextMenu");
+  if (!menu) return;
+  if (menu.style.display === "block" && !menu.contains(e.target)) {
+    hideRecordContextMenu();
+  }
+});
+window.addEventListener("scroll", hideRecordContextMenu, true);
+window.addEventListener("resize", hideRecordContextMenu);
+document.addEventListener("contextmenu", (e) => {
+  if (!e.target.closest(".record-card")) hideRecordContextMenu();
+});
+
+// 处理菜单点击：编辑 / 删除
+document
+  .getElementById("recordContextMenu")
+  ?.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".ctx-item");
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    const menu = document.getElementById("recordContextMenu");
+    const id = menu.dataset.recordId;
+    const rec =
+      window._focusCache.get(Number(id)) || window._focusCache.get(id);
+    hideRecordContextMenu();
+    if (!rec) return;
+
+    if (action === "edit") {
+      // 仅修改 task；PUT 接口要求 start_time / end_time / task 都提供
+      // 我们把原 start/end 回填，保证通过校验
+      const def = rec.task || "";
+      const val = prompt("修改专注内容：", def);
+      if (val == null) return; // 取消
+      const payload = {
+        start_time: new Date(rec.start_time).toISOString(),
+        end_time: new Date(rec.end_time).toISOString(),
+        task: val.trim(),
+      };
+      try {
+        const resp = await fetch(API_BASE() + "/focus/" + rec.id, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + TOKEN(),
+          },
+          body: JSON.stringify(payload),
+        });
+        if (resp.ok) {
+          showToast("已更新");
+          refreshRecords();
+        } else {
+          const text = await resp.text();
+          showToast("更新失败：" + resp.status + " " + text, true);
+        }
+      } catch (err) {
+        showToast("请求出错：" + err.message, true);
+      }
+    }
+
+    if (action === "delete") {
+      if (!confirm("确认删除这条专注记录？此操作不可撤销。")) return;
+      try {
+        const resp = await fetch(API_BASE() + "/focus/" + rec.id, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + TOKEN() },
+        });
+        if (resp.ok) {
+          showToast("已删除");
+          refreshRecords();
+        } else {
+          const text = await resp.text();
+          showToast("删除失败：" + resp.status + " " + text, true);
+        }
+      } catch (err) {
+        showToast("请求出错：" + err.message, true);
+      }
+    }
+  });
 
 function shortHM(d) {
   const mm = String(d.getMinutes()).padStart(2, "0");
@@ -229,6 +354,8 @@ function renderRecords(list) {
     if (empty) empty.style.display = "none";
   }
 
+  window._focusCache = new Map(); // 先清空再填
+
   (list || []).forEach((r) => {
     const s = new Date(r.start_time);
     const e = new Date(r.end_time);
@@ -236,10 +363,11 @@ function renderRecords(list) {
 
     const startStr = shortMDHM(s);
     const endStr = sameDay ? shortHM(e) : shortMDHM(e);
-    const durStr = fmtDuration(e - s); // 你现有的时长格式化
+    const durStr = fmtDuration(e - s);
 
     const card = document.createElement("div");
     card.className = "record-card";
+    card.dataset.id = r.id; // ✅ 记录 id
     card.innerHTML = `
       <div class="task" title="${xss(r.task)}">${xss(r.task)}</div>
       <div class="when">
@@ -247,10 +375,12 @@ function renderRecords(list) {
         <span class="dur">${durStr}</span>
       </div>
     `;
+    card.addEventListener("contextmenu", onRecordContextMenu); // ✅ 右键菜单
     listWrap.appendChild(card);
+
+    window._focusCache.set(r.id, r); // ✅ 缓存记录对象
   });
 
-  // 渲染图标
   if (window.lucide?.createIcons) lucide.createIcons();
 }
 
