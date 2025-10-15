@@ -38,6 +38,35 @@ function showMessage(text, type = "success") {
   msg.style.display = "block";
   setTimeout(() => (msg.style.display = "none"), 3000);
 }
+// ========== 欢迎语填充 ==========
+function populateWelcome() {
+  const u = JSON.parse(localStorage.getItem("currentUser") || "{}");
+  const el = document.getElementById("welcomeName");
+  if (el) el.textContent = u?.username || "朋友";
+}
+
+// 开始按钮：标记已看过欢迎页，并跳到“专注”页（可改为 'add'）
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("welcomeStartBtn");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      localStorage.setItem("welcomeSeen", "1");
+      switchPage("live");
+    });
+  }
+
+  // 首屏：如果看过欢迎页了，直接进“专注”页；否则显示欢迎页
+  if (localStorage.getItem("welcomeSeen") === "1") {
+    document.getElementById("homePage")?.classList.remove("active");
+    switchPage("live"); // 或 'add'
+  } else {
+    switchPage("home");
+  }
+
+  // 首次渲染图标
+  if (window.lucide?.createIcons) lucide.createIcons();
+});
+
 // === 主题切换 ===
 // 主题切换：更新 link & 本地存储（路径已用 /css/theme）
 function applyTheme(name) {
@@ -252,22 +281,35 @@ window.switchPage = function (pageName) {
   pages.forEach((p) => p.classList.remove("active"));
   navItems.forEach((n) => n.classList.remove("active"));
 
-  // ✅ 更新映射：add(0), stats(1), records(2), settings(3)
-  const map = { add: 0, stats: 1, records: 2, settings: 3 };
+  // 侧栏顺序：live, add, stats, records, settings
+  const map = { live: 0, add: 1, stats: 2, records: 3, settings: 4 };
 
-  if (pageName === "add") {
-    document.getElementById("addPage").classList.add("active");
-  } else if (pageName === "stats") {
-    document.getElementById("statsPage").classList.add("active");
-  } else if (pageName === "records") {
-    document.getElementById("recordsPage").classList.add("active");
-    refreshRecords(); // ✅ 进入记录页时加载
-  } else if (pageName === "settings") {
-    document.getElementById("settingsPage").classList.add("active");
-    populateSettings();
+  if (pageName === "home") {
+    document.getElementById("homePage")?.classList.add("active");
+    populateWelcome();
+    return; // 没有侧栏高亮
   }
-
-  navItems[map[pageName]].classList.add("active");
+  if (pageName === "live") {
+    document.getElementById("livePage")?.classList.add("active");
+    initLiveFocusUI?.();
+  } else if (pageName === "add") {
+    document.getElementById("addPage")?.classList.add("active");
+  } else if (pageName === "stats") {
+    document.getElementById("statsPage")?.classList.add("active");
+    if (window.updateStats) updateStats(window.currentScope || "week");
+  } else if (pageName === "records") {
+    document.getElementById("recordsPage")?.classList.add("active");
+    refreshRecords?.();
+  } else if (pageName === "settings") {
+    document.getElementById("settingsPage")?.classList.add("active");
+    populateSettings?.();
+  } else {
+    // 兜底回首页
+    document.getElementById("homePage")?.classList.add("active");
+    populateWelcome();
+    return;
+  }
+  navItems[map[pageName]]?.classList.add("active");
 };
 
 // ========== 设置页填充（仅用户名） ==========

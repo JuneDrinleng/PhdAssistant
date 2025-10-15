@@ -1,0 +1,93 @@
+/* ===== 统计页（使用主题变量） ===== */
+#taskChart {
+  max-width: 420px;
+  width: 100%;
+  aspect-ratio: 1/1;
+  margin: 12px auto;
+}
+.scope-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 8px 0 12px;
+}
+.scope-tabs .tab {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft);
+  background: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+}
+.scope-tabs .tab.active,
+.scope-tabs .tab:hover {
+  background: var(--brand-a12);
+  color: var(--brand);
+  border-color: var(--brand-a15);
+}
+.stats-meta {
+  text-align: center;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.stats-meta #date-range {
+  color: var(--brand);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+#chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  list-style: none;
+  padding: 0;
+  justify-content: center;
+  margin-top: 8px;
+}
+#chart-legend li {
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+#chart-legend li::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 6px;
+}
+/* 更紧凑的饼图尺寸（只控制宽度，让 Chart.js 决定高度） */
+:root {
+  --chart-size: 220px;
+} /* 移动端 */
+@media (min-width: 1024px) {
+  :root {
+    --chart-size: 280px;
+  }
+} /* 桌面 */
+
+#statsPage .chart-box {
+  width: min(92%, var(--chart-size));
+  margin: 8px auto; /* 不再用 aspect-ratio + 绝对定位 */
+}
+
+#statsPage #taskChart {
+  width: 100% !important;
+  height: auto !important; /* 交给 Chart.js 计算高度=宽度 */
+  display: block; /* 去掉行内元素的空隙影响 */
+}
+
+/* 图例依旧紧凑 */
+#chart-legend {
+  gap: 8px 12px;
+}
+#chart-legend li {
+  font-size: 0.88rem;
+}
+#chart-legend li::before {
+  width: 8px;
+  height: 8px;
+}

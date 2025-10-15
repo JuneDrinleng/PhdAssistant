@@ -335,3 +335,41 @@ button[type="submit"]:disabled {
 body.sidebar-open {
   overflow: hidden;
 }
+/* 让输入控件的插入光标可见（覆盖上层继承的透明设置） */
+input[type="text"],
+input[type="password"],
+input[type="datetime-local"],
+textarea,
+[contenteditable="true"] {
+  caret-color: var(--text); /* 或者用 auto */
+}
+
+/* 聚焦时光标颜色稍深，便于识别 */
+input:focus,
+textarea:focus,
+[contenteditable="true"]:focus {
+  caret-color: var(--text-strong);
+}
+
+/* 统计饼图尺寸控制 */
+:root {
+  --chart-size: 320px;
+} /* 想更小/更大只改这个变量即可 */
+
+#statsPage .chart-box {
+  width: min(90%, var(--chart-size));
+  aspect-ratio: 1 / 1; /* 保持正方形 */
+  margin: 12px auto 8px;
+  position: relative; /* 让 canvas 绝对撑满 */
+}
+#statsPage #taskChart {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+@media (min-width: 1024px) {
+  :root {
+    --chart-size: 380px;
+  } /* 桌面稍大一点 */
+}

@@ -1,0 +1,63 @@
+/* 专注按钮同主按钮风格 */
+#livePage #focusToggleBtn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: var(--btn-primary-bg);
+  color: var(--on-primary);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+#livePage #focusToggleBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--btn-primary-shadow);
+}
+#livePage #focusToggleBtn:active {
+  transform: translateY(0);
+}
+/* 只用主题变量；不硬编码颜色 */
+
+/* 输入框错误态（未填写就开始） */
+#livePage .input-error {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-ring);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 22px;
+  transform: translateX(-50%) translateY(-12px);
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--brand);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: var(--elevation-2);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.toast.success {
+  border-left-color: var(--brand);
+}
+.toast.error {
+  border-left-color: var(--msg-error-border);
+}
+
+/* 进行专注时，把输入设为只读的视觉（不改 value） */
+#livePage .task-locked {
+  background: var(--page-bg);
+  cursor: default;
+}
