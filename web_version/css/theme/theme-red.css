@@ -1,0 +1,68 @@
+/* === 全站红/粉主题（唯一放颜色） === */
+:root {
+  /* 页面与文本 */
+  --page-bg: #fff;
+  --text-strong: #222;
+  --text: #333;
+  --text-muted: #888;
+  --transparent: transparent;
+
+  /* 品牌主色 */
+  --brand: #ff6b81;
+  --brand-dark: #ff4757;
+  --brand-a10: rgba(255, 107, 129, 0.1);
+  --brand-a12: rgba(255, 107, 129, 0.12);
+  --brand-a15: rgba(255, 107, 129, 0.15);
+  --brand-shadow: rgba(255, 107, 129, 0.3);
+
+  /* 中性色/覆盖层 */
+  --overlay-05: rgba(0, 0, 0, 0.05);
+  --overlay-10: rgba(0, 0, 0, 0.1);
+  --backdrop: rgba(0, 0, 0, 0.35);
+
+  /* 侧边栏/导航 */
+  --sidebar-bg: rgba(255, 255, 255, 0.95);
+  --sidebar-divider: rgba(0, 0, 0, 0.08);
+  --icon-stroke: var(--brand);
+  --nav-fg: #666;
+  --nav-hover-bg: var(--brand-a10);
+  --nav-active-bg: var(--brand-a15);
+  --nav-active-fg: var(--brand);
+
+  /* 卡片/阴影/边框 */
+  --card-bg: #fff;
+  --card-radius: 20px;
+  --border-soft: #eee;
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --elevation-2: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --elevation-3: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  /* 表单/按钮 */
+  --input-border: #e0e0e0;
+  --input-focus-border: var(--brand);
+  --input-focus-ring: 0 0 0 3px var(--brand-a10);
+  --btn-primary-bg: linear-gradient(
+    135deg,
+    var(--brand) 0%,
+    var(--brand-dark) 100%
+  );
+  --btn-primary-shadow: 0 10px 20px var(--brand-shadow);
+  --on-primary: #fff;
+  --disabled-bg: #ccc;
+  --disabled-fg: #fff;
+
+  /* 提示消息 */
+  --msg-success-bg: #d4edda;
+  --msg-success-fg: #155724;
+  --msg-success-border: #c3e6cb;
+  --msg-error-bg: #f8d7da;
+  --msg-error-fg: #721c24;
+  --msg-error-border: #f5c6cb;
+
+  /* 记录页容器（淡粉） */
+  --records-surface-from: #ffe5ea;
+  --records-surface-to: #fff1f5;
+  --records-shadow: 0 8px 22px rgba(255, 90, 138, 0.1);
+  --records-chip-bg: var(--brand-a12);
+  --records-chip-fg: var(--brand);
+}

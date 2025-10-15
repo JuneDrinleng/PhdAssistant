@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>专注时间管理器</title>
-    <link rel="icon" href="./assets/favicon.ico" />
+    <title>专注小助手</title>
+    <link rel="icon" href="./assets/favicon/favicon.ico" />
     <link href="./css/index.css" rel="stylesheet" />
     <link rel="preconnect" href="https://unpkg.com" />
     <script
@@ -21,10 +21,22 @@
       }
     </style>
     <link href="./css/record.css" rel="stylesheet" />
+    <link href="./css/settings.css" rel="stylesheet" />
+    <script>
+      // 动态加载主题 CSS（默认 red）
+      (function () {
+        var theme = localStorage.getItem("theme") || "red";
+        var link = document.createElement("link");
+        link.id = "theme-link";
+        link.rel = "stylesheet";
+        link.href = "./css/theme/theme-" + theme + ".css";
+        document.head.appendChild(link);
+      })();
+    </script>
   </head>
   <body>
     <!-- 侧边栏 -->
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar collapsed" id="sidebar">
       <div class="sidebar-header">
         <button class="toggle-btn" onclick="toggleSidebar()">
           <i data-lucide="menu"></i>
@@ -63,7 +75,7 @@
         </button>
       </div>
     </div>
-
+    <div class="backdrop" id="backdrop" onclick="toggleSidebar()"></div>
     <!-- 主内容 -->
     <div class="main-content">
       <div class="main-header">
@@ -131,11 +143,11 @@
                 <path d="M8 17v-3"></path>
               </svg>
               <p style="font-size: 18px; margin-bottom: 10px">统计页面</p>
-              <p class="muted">此页面稍后开发...</p>
+              <p class="muted">页面开发中</p>
             </div>
           </div>
         </div>
-        <!-- ✅ 查看记录页面（美化版） -->
+        <!-- ✅ 查看记录页面（卡片版） -->
         <div id="recordsPage" class="page">
           <div class="container">
             <h1>🗒️ 专注记录</h1>
@@ -151,36 +163,58 @@
               <span id="recordsMeta" class="records-meta"></span>
             </div>
 
-            <div class="records-card">
-              <table class="records-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>开始</th>
-                    <th>结束</th>
-                    <th>时长</th>
-                    <th>任务</th>
-                  </tr>
-                </thead>
-                <tbody id="recordsBody"></tbody>
-              </table>
-
-              <!-- 无数据时的占位（可选，JS 里可按需显示/隐藏） -->
+            <div class="cards-wrap">
               <div id="recordsEmpty" class="empty-state" style="display: none">
                 <i data-lucide="inbox"></i>
                 <p>暂无记录</p>
               </div>
+
+              <!-- 卡片列表容器 -->
+              <div id="recordsList" class="cards-list"></div>
             </div>
           </div>
         </div>
 
-        <!-- 设置页（仅显示用户名） -->
+        <!-- 设置页（用户名 + 主题选择） -->
         <div id="settingsPage" class="page">
           <div class="container">
             <h1>⚙️ 设置</h1>
+
             <div class="form-group form-readonly">
               <label>用户名</label>
               <input id="infoUsername" type="text" readonly />
+            </div>
+
+            <!-- 主题选择卡片 -->
+            <div class="theme-card">
+              <div class="theme-header">
+                <i data-lucide="palette"></i>
+                <strong>主题颜色</strong>
+              </div>
+
+              <!-- 当前主题预览条（使用当前 theme 的变量） -->
+              <div class="theme-preview"></div>
+
+              <div class="theme-controls">
+                <!-- 快捷按钮 -->
+                <div class="swatches" id="themeSwatches">
+                  <button type="button" class="pill" data-theme="red">
+                    Red
+                  </button>
+                  <button type="button" class="pill" data-theme="blue">
+                    Blue
+                  </button>
+                  <button type="button" class="pill" data-theme="purple">
+                    Purple
+                  </button>
+                  <button type="button" class="pill" data-theme="green">
+                    Green
+                  </button>
+                  <button type="button" class="pill" data-theme="dark">
+                    Dark
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

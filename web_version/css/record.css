@@ -1,0 +1,129 @@
+/* ───────── 专注记录页（卡片样式；颜色全来自 theme） ───────── */
+
+/* 工具栏 */
+#recordsPage .records-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 14px;
+}
+#recordsPage .records-meta {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+#recordsPage .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border-soft);
+  background: var(--brand-a12);
+  color: var(--brand);
+  font-weight: 700;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+#recordsPage .btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.99);
+}
+#recordsPage .btn i[data-lucide] {
+  width: 18px;
+  height: 18px;
+}
+
+/* 柔和渐变容器 */
+#recordsPage .cards-wrap {
+  background: linear-gradient(
+    180deg,
+    var(--records-surface-from) 0%,
+    var(--records-surface-to) 100%
+  );
+  padding: 16px;
+  border-radius: 20px;
+  box-shadow: var(--records-shadow);
+}
+
+/* 列表与卡片 */
+#recordsPage .cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#recordsPage .record-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: var(--records-shadow);
+}
+
+/* 左：任务 */
+#recordsPage .record-card .task {
+  font-weight: 700;
+  color: var(--text-strong);
+  max-width: 56%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 右：时间与时长 */
+#recordsPage .record-card .when {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+#recordsPage .record-card .range {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+#recordsPage .record-card .range i[data-lucide] {
+  width: 16px;
+  height: 16px;
+}
+#recordsPage .record-card .dur {
+  color: var(--records-chip-fg);
+  font-weight: 700;
+  padding: 2px 8px;
+  background: var(--records-chip-bg);
+  border-radius: 999px;
+}
+
+/* 空数据占位 */
+#recordsPage .empty-state {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  color: var(--text-muted);
+  padding: 24px 10px;
+}
+#recordsPage .empty-state i[data-lucide] {
+  width: 18px;
+  height: 18px;
+}
+
+/* 移动端自适应 */
+@media (max-width: 640px) {
+  #recordsPage .record-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  #recordsPage .record-card .task {
+    max-width: 100%;
+  }
+  #recordsPage .record-card .when {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

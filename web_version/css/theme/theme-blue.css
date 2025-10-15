@@ -1,0 +1,59 @@
+:root {
+  --page-bg: #fff;
+  --text-strong: #1f2937;
+  --text: #374151;
+  --text-muted: #6b7280;
+  --transparent: transparent;
+
+  --brand: #3b82f6;
+  --brand-dark: #1d4ed8;
+  --brand-a10: rgba(59, 130, 246, 0.1);
+  --brand-a12: rgba(59, 130, 246, 0.12);
+  --brand-a15: rgba(59, 130, 246, 0.15);
+  --brand-shadow: rgba(59, 130, 246, 0.3);
+
+  --overlay-05: rgba(0, 0, 0, 0.05);
+  --overlay-10: rgba(0, 0, 0, 0.1);
+  --backdrop: rgba(0, 0, 0, 0.35);
+
+  --sidebar-bg: rgba(255, 255, 255, 0.97);
+  --sidebar-divider: rgba(0, 0, 0, 0.08);
+  --icon-stroke: var(--brand);
+  --nav-fg: #4b5563;
+  --nav-hover-bg: var(--brand-a10);
+  --nav-active-bg: var(--brand-a15);
+  --nav-active-fg: var(--brand);
+
+  --card-bg: #fff;
+  --card-radius: 20px;
+  --border-soft: #e5e7eb;
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --elevation-2: 0 10px 30px rgba(0, 0, 0, 0.1);
+  --elevation-3: 0 20px 54px rgba(0, 0, 0, 0.2);
+
+  --input-border: #e5e7eb;
+  --input-focus-border: var(--brand);
+  --input-focus-ring: 0 0 0 3px var(--brand-a10);
+  --btn-primary-bg: linear-gradient(
+    135deg,
+    var(--brand) 0%,
+    var(--brand-dark) 100%
+  );
+  --btn-primary-shadow: 0 10px 20px var(--brand-shadow);
+  --on-primary: #fff;
+  --disabled-bg: #cbd5e1;
+  --disabled-fg: #fff;
+
+  --msg-success-bg: #d1fae5;
+  --msg-success-fg: #065f46;
+  --msg-success-border: #a7f3d0;
+  --msg-error-bg: #fee2e2;
+  --msg-error-fg: #991b1b;
+  --msg-error-border: #fecaca;
+
+  --records-surface-from: #eaf2ff;
+  --records-surface-to: #f5f9ff;
+  --records-shadow: 0 8px 22px rgba(59, 130, 246, 0.1);
+  --records-chip-bg: var(--brand-a12);
+  --records-chip-fg: var(--brand);
+}

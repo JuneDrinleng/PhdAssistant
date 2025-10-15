@@ -1,0 +1,59 @@
+:root {
+  --page-bg: #0f1115;
+  --text-strong: #f3f4f6;
+  --text: #e5e7eb;
+  --text-muted: #9ca3af;
+  --transparent: transparent;
+
+  --brand: #ff6b81;
+  --brand-dark: #ff4757;
+  --brand-a10: rgba(255, 107, 129, 0.15);
+  --brand-a12: rgba(255, 107, 129, 0.18);
+  --brand-a15: rgba(255, 107, 129, 0.22);
+  --brand-shadow: rgba(255, 107, 129, 0.45);
+
+  --overlay-05: rgba(255, 255, 255, 0.06);
+  --overlay-10: rgba(255, 255, 255, 0.1);
+  --backdrop: rgba(0, 0, 0, 0.6);
+
+  --sidebar-bg: rgba(17, 19, 24, 0.92);
+  --sidebar-divider: rgba(255, 255, 255, 0.06);
+  --icon-stroke: var(--brand);
+  --nav-fg: #cbd5e1;
+  --nav-hover-bg: rgba(255, 255, 255, 0.06);
+  --nav-active-bg: var(--brand-a15);
+  --nav-active-fg: #fff;
+
+  --card-bg: #13161b;
+  --card-radius: 20px;
+  --border-soft: #1f232b;
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.6);
+  --elevation-2: 0 10px 30px rgba(0, 0, 0, 0.55);
+  --elevation-3: 0 20px 60px rgba(0, 0, 0, 0.65);
+
+  --input-border: #2a2f39;
+  --input-focus-border: var(--brand);
+  --input-focus-ring: 0 0 0 3px rgba(255, 107, 129, 0.2);
+  --btn-primary-bg: linear-gradient(
+    135deg,
+    var(--brand) 0%,
+    var(--brand-dark) 100%
+  );
+  --btn-primary-shadow: 0 10px 20px rgba(255, 107, 129, 0.25);
+  --on-primary: #fff;
+  --disabled-bg: #374151;
+  --disabled-fg: #9ca3af;
+
+  --msg-success-bg: #063b29;
+  --msg-success-fg: #a7f3d0;
+  --msg-success-border: #065f46;
+  --msg-error-bg: #3f1d26;
+  --msg-error-fg: #fecaca;
+  --msg-error-border: #991b1b;
+
+  --records-surface-from: #171a21;
+  --records-surface-to: #12151b;
+  --records-shadow: 0 8px 22px rgba(0, 0, 0, 0.6);
+  --records-chip-bg: rgba(255, 107, 129, 0.2);
+  --records-chip-fg: #ffd1d9;
+}

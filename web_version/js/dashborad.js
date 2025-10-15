@@ -38,6 +38,36 @@ function showMessage(text, type = "success") {
   msg.style.display = "block";
   setTimeout(() => (msg.style.display = "none"), 3000);
 }
+// === 主题切换 ===
+// 主题切换：更新 link & 本地存储（路径已用 /css/theme）
+function applyTheme(name) {
+  const link = document.getElementById("theme-link");
+  if (link) link.href = "./css/theme/theme-" + name + ".css?v=1";
+  localStorage.setItem("theme", name);
+}
+
+// 进入设置页时：高亮当前主题按钮 & 绑定点击事件（无下拉）
+document.addEventListener("DOMContentLoaded", () => {
+  const swWrap = document.getElementById("themeSwatches");
+  const current = localStorage.getItem("theme") || "red";
+
+  if (swWrap) {
+    swWrap.querySelectorAll(".pill").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.theme === current);
+      btn.addEventListener("click", () => {
+        const val = btn.dataset.theme;
+        applyTheme(val);
+        // 切换高亮
+        swWrap.querySelectorAll(".pill").forEach((b) => {
+          b.classList.toggle("active", b.dataset.theme === val);
+        });
+      });
+    });
+  }
+
+  // 首次渲染图标
+  if (window.lucide?.createIcons) lucide.createIcons();
+});
 
 // ========== 提交专注时间 ==========
 document.getElementById("focusForm").addEventListener("submit", async (e) => {
@@ -124,11 +154,11 @@ function xss(s) {
 // ===== 拉取并渲染记录 =====
 async function refreshRecords() {
   const meta = document.getElementById("recordsMeta");
-  const tbody = document.getElementById("recordsBody");
-  if (!meta || !tbody) return;
+  const listWrap = document.getElementById("recordsList"); // ← 用卡片容器
+  if (!meta || !listWrap) return;
 
   meta.textContent = "正在加载…";
-  tbody.innerHTML = "";
+  listWrap.innerHTML = "";
 
   try {
     const resp = await fetch(API_BASE() + "/focus?limit=500", {
@@ -138,54 +168,81 @@ async function refreshRecords() {
       meta.textContent = `加载失败：${resp.status}`;
       return;
     }
-    const list = await resp.json(); // [{id, start_time, end_time, task}, ...]
-    renderRecords(list);
+    const list = await resp.json();
+    renderRecords(list); // ← 你已有的卡片渲染函数
     meta.textContent = `共 ${list.length} 条`;
   } catch (e) {
     meta.textContent = "加载失败：" + e.message;
   }
 }
 
+function shortHM(d) {
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+function shortMDHM(d) {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${m}/${day} ${shortHM(d)}`;
+}
+
 function renderRecords(list) {
-  const tbody = document.getElementById("recordsBody");
-  if (!tbody) return;
-  tbody.innerHTML = "";
-  (list || []).forEach((r, i) => {
-    const tr = document.createElement("tr");
-    const dur = new Date(r.end_time) - new Date(r.start_time);
-    tr.innerHTML = `
-      <td style="padding:10px 12px; border-bottom:1px solid #f0f0f0;">${
-        i + 1
-      }</td>
-      <td style="padding:10px 12px; border-bottom:1px solid #f0f0f0;">${fmtDate(
-        r.start_time
-      )}</td>
-      <td style="padding:10px 12px; border-bottom:1px solid #f0f0f0;">${fmtDate(
-        r.end_time
-      )}</td>
-      <td style="padding:10px 12px; border-bottom:1px solid #f0f0f0;">${fmtDuration(
-        dur
-      )}</td>
-      <td style="padding:10px 12px; border-bottom:1px solid #f0f0f0;">${xss(
-        r.task
-      )}</td>
+  const listWrap = document.getElementById("recordsList");
+  const empty = document.getElementById("recordsEmpty");
+  if (!listWrap) return;
+
+  listWrap.innerHTML = "";
+  if (!list || list.length === 0) {
+    if (empty) empty.style.display = "flex";
+    return;
+  } else {
+    if (empty) empty.style.display = "none";
+  }
+
+  (list || []).forEach((r) => {
+    const s = new Date(r.start_time);
+    const e = new Date(r.end_time);
+    const sameDay = s.toDateString() === e.toDateString();
+
+    const startStr = shortMDHM(s);
+    const endStr = sameDay ? shortHM(e) : shortMDHM(e);
+    const durStr = fmtDuration(e - s); // 你现有的时长格式化
+
+    const card = document.createElement("div");
+    card.className = "record-card";
+    card.innerHTML = `
+      <div class="task" title="${xss(r.task)}">${xss(r.task)}</div>
+      <div class="when">
+        <span class="range">${startStr} <i data-lucide="arrow-right"></i> ${endStr}</span>
+        <span class="dur">${durStr}</span>
+      </div>
     `;
-    tbody.appendChild(tr);
+    listWrap.appendChild(card);
   });
+
+  // 渲染图标
+  if (window.lucide?.createIcons) lucide.createIcons();
 }
 
 // ========== 侧边栏 & 页面切换 ==========
+// 覆盖式展开/收起侧边栏，不再改 main-content 的 margin
 window.toggleSidebar = function () {
   const sidebar = document.getElementById("sidebar");
   const expandBtn = document.querySelector(".expand-btn");
-  const mainContent = document.querySelector(".main-content");
-  sidebar.classList.toggle("collapsed");
-  if (sidebar.classList.contains("collapsed")) {
-    expandBtn.style.display = "flex";
-    mainContent.style.marginLeft = "0";
-  } else {
+  const backdrop = document.getElementById("backdrop");
+
+  const willOpen = sidebar.classList.contains("collapsed"); // 目前收起 → 准备打开
+  if (willOpen) {
+    sidebar.classList.remove("collapsed");
     expandBtn.style.display = "none";
-    mainContent.style.marginLeft = "260px";
+    backdrop?.classList.add("show");
+    document.body.classList.add("sidebar-open");
+  } else {
+    sidebar.classList.add("collapsed");
+    expandBtn.style.display = "flex";
+    backdrop?.classList.remove("show");
+    document.body.classList.remove("sidebar-open");
   }
 };
 

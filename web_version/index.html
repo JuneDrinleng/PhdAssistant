@@ -6,19 +6,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <script src="./js/noedit.js"></script>
     <link rel="stylesheet" href="./css/index.css" />
-    <link rel="icon" href="./assets/favicon.ico" />
-    <style>
-      .auth-links {
-        text-align: center;
-        margin-top: 12px;
-        font-size: 14px;
-      }
-      .auth-toggle {
-        color: #667eea;
-        cursor: pointer;
-        text-decoration: underline;
-      }
-    </style>
+    <link rel="icon" href="./assets/favicon/favicon.ico" />
+    <script>
+      // 动态加载主题 CSS（默认 red）
+      (function () {
+        var theme = localStorage.getItem("theme") || "red";
+        var link = document.createElement("link");
+        link.id = "theme-link";
+        link.rel = "stylesheet";
+        link.href = "./css/theme/theme-" + theme + ".css";
+        document.head.appendChild(link);
+      })();
+    </script>
     <script src="./js/linkapi.js" defer></script>
   </head>
   <body>

@@ -1,0 +1,63 @@
+/* 仅负责设置页的外观；所有颜色都引用 theme 变量 */
+
+#settingsPage .theme-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--card-radius);
+  padding: 16px;
+  box-shadow: var(--elevation-2);
+  margin-top: 8px;
+}
+
+#settingsPage .theme-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--text-strong);
+}
+#settingsPage .theme-header i[data-lucide] {
+  width: 18px;
+  height: 18px;
+}
+
+#settingsPage .theme-preview {
+  height: 10px;
+  border-radius: 999px;
+  margin: 8px 0 14px;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  box-shadow: inset 0 0 0 1px var(--brand-a10);
+}
+
+#settingsPage .theme-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#settingsPage .swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#settingsPage .swatches .pill {
+  appearance: none;
+  border: 1px solid var(--border-soft);
+  background: var(--overlay-05);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease,
+    border-color 0.12s ease;
+}
+#settingsPage .swatches .pill:hover {
+  transform: translateY(-1px);
+}
+#settingsPage .swatches .pill.active {
+  background: var(--brand-a12);
+  color: var(--brand);
+  border-color: var(--brand-a15);
+}
