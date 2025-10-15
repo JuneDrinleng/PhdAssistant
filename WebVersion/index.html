@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>登录</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="./js/noedit.js"></script>
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="icon" href="./assets/favicon.ico" />
+    <style>
+      .auth-links {
+        text-align: center;
+        margin-top: 12px;
+        font-size: 14px;
+      }
+      .auth-toggle {
+        color: #667eea;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+    </style>
+    <script src="./js/linkapi.js" defer></script>
+  </head>
+  <body>
+    <div class="content-wrapper" style="width: 100%">
+      <div class="page active">
+        <div class="container" style="max-width: 420px">
+          <h1 id="loginTitle">🔐 登录</h1>
+
+          <!-- 登录表单 -->
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="loginUsername">用户名</label>
+              <input type="text" id="loginUsername" required />
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">密码</label>
+              <input type="password" id="loginPassword" required />
+            </div>
+            <button type="submit">登录</button>
+          </form>
+
+          <div class="auth-links" id="toRegisterWrap">
+            还没有账号？<span class="auth-toggle" id="toRegister"
+              >点击注册</span
+            >
+          </div>
+
+          <div id="loginMsg" class="message" style="display: none"></div>
+          <!-- 分隔线：加 id -->
+          <hr
+            id="divider"
+            style="margin: 24px 0; border: none; border-top: 1px solid #eee"
+          />
+
+          <!-- 注册 -->
+          <h1 id="registerTitle" style="display: none">📝 注册</h1>
+          <form id="registerForm" style="display: none">
+            <div class="form-group">
+              <label for="regUsername">用户名</label>
+              <input type="text" id="regUsername" required />
+            </div>
+            <div class="form-group">
+              <label for="regPassword">密码</label>
+              <input type="password" id="regPassword" required />
+            </div>
+            <button type="submit">注册并登录</button>
+          </form>
+          <div class="auth-links" id="toLoginWrap" style="display: none">
+            已有账号？<span class="auth-toggle" id="toLogin">返回登录</span>
+          </div>
+
+          <div id="registerMsg" class="message" style="display: none"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./js/login.js"></script>
+  </body>
+</html>

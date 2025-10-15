@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>专注时间管理器</title>
+    <link rel="icon" href="./assets/favicon.ico" />
+    <link href="./css/index.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://unpkg.com" />
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
+      defer
+    ></script>
+    <style>
+      /* 统一图标尺寸，和你现有按钮对齐 */
+      .sidebar-nav .nav-item i[data-lucide],
+      .sidebar-header .toggle-btn i[data-lucide],
+      .main-header .expand-btn i[data-lucide] {
+        width: 20px;
+        height: 20px;
+      }
+    </style>
+    <link href="./css/record.css" rel="stylesheet" />
+  </head>
+  <body>
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <button class="toggle-btn" onclick="toggleSidebar()">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- 添加专注时间 -->
+        <button class="nav-item active" onclick="switchPage('add')">
+          <i data-lucide="square-plus"></i>
+          <span>添加专注时间</span>
+        </button>
+
+        <!-- 统计 -->
+        <button class="nav-item" onclick="switchPage('stats')">
+          <i data-lucide="bar-chart-3"></i>
+          <span>统计</span>
+        </button>
+        <!-- 查看记录 -->
+        <button class="nav-item" onclick="switchPage('records')">
+          <i data-lucide="list"></i>
+          <span>查看记录</span>
+        </button>
+        <!-- 设置 -->
+        <button class="nav-item" onclick="switchPage('settings')">
+          <i data-lucide="settings"></i>
+          <span>设置</span>
+        </button>
+      </nav>
+
+      <!-- 左下角 退出 -->
+      <div class="sidebar-footer">
+        <button class="nav-item danger" onclick="logout()">
+          <i data-lucide="log-out"></i>
+          <span>退出登录</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+      <div class="main-header">
+        <button class="expand-btn" onclick="toggleSidebar()">
+          <i data-lucide="menu"></i>
+        </button>
+      </div>
+
+      <div class="content-wrapper">
+        <!-- 添加专注时间（移除了 API URL 与 API Key） -->
+        <div id="addPage" class="page active">
+          <div class="container">
+            <h1>⏰ 添加专注时间</h1>
+
+            <form id="focusForm">
+              <div class="form-group">
+                <label>时间选择</label>
+                <div class="time-group">
+                  <div>
+                    <label for="startTime" style="font-size: 12px; color: #888"
+                      >开始时间</label
+                    >
+                    <input type="datetime-local" id="startTime" required />
+                  </div>
+                  <div>
+                    <label for="endTime" style="font-size: 12px; color: #888"
+                      >结束时间</label
+                    >
+                    <input type="datetime-local" id="endTime" required />
+                  </div>
+                </div>
+                <div class="timezone-info" id="timezoneInfo"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="task">专注内容</label>
+                <textarea
+                  id="task"
+                  placeholder="描述你要专注的任务..."
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" id="submitBtn">🚀 发送专注计划</button>
+            </form>
+
+            <div id="message" class="message"></div>
+          </div>
+        </div>
+
+        <!-- 统计页（占位） -->
+        <div id="statsPage" class="page">
+          <div class="container">
+            <h1>📊 专注统计</h1>
+            <div class="stats-placeholder">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 3v18h18"></path>
+                <path d="M18 17V9"></path>
+                <path d="M13 17V5"></path>
+                <path d="M8 17v-3"></path>
+              </svg>
+              <p style="font-size: 18px; margin-bottom: 10px">统计页面</p>
+              <p class="muted">此页面稍后开发...</p>
+            </div>
+          </div>
+        </div>
+        <!-- ✅ 查看记录页面（美化版） -->
+        <div id="recordsPage" class="page">
+          <div class="container">
+            <h1>🗒️ 专注记录</h1>
+
+            <div class="records-toolbar">
+              <button
+                type="button"
+                class="btn btn-refresh"
+                onclick="refreshRecords()"
+              >
+                <i data-lucide="refresh-ccw"></i><span>刷新</span>
+              </button>
+              <span id="recordsMeta" class="records-meta"></span>
+            </div>
+
+            <div class="records-card">
+              <table class="records-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>开始</th>
+                    <th>结束</th>
+                    <th>时长</th>
+                    <th>任务</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsBody"></tbody>
+              </table>
+
+              <!-- 无数据时的占位（可选，JS 里可按需显示/隐藏） -->
+              <div id="recordsEmpty" class="empty-state" style="display: none">
+                <i data-lucide="inbox"></i>
+                <p>暂无记录</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 设置页（仅显示用户名） -->
+        <div id="settingsPage" class="page">
+          <div class="container">
+            <h1>⚙️ 设置</h1>
+            <div class="form-group form-readonly">
+              <label>用户名</label>
+              <input id="infoUsername" type="text" readonly />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 页面脚本 -->
+    <script src="./js/dashborad.js"></script>
+    <script>
+      // 渲染所有 data-lucide 图标
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.lucide?.createIcons) lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>

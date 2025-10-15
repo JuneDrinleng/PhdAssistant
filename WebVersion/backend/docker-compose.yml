@@ -1,0 +1,23 @@
+services:
+  api:
+    build: .
+    container_name: ${CONTAINER_NAME}
+    ports:
+      - "${HOST_PORT}:${PORT}" # 宿主机端口:容器端口
+    environment:
+      # 应用自身
+      PORT: "${PORT}" # service.js 会用 process.env.PORT 监听
+      JWT_SECRET: "${JWT_SECRET}"
+
+      # 数据库（Compose 负责把下面 5 个变量拼成完整连接串）
+      DATABASE_URL: "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+      PGSSL: "${PGSSL}" # 云数据库常用 true，本机/同网容器一般 false
+
+      NODE_ENV: "production"
+    networks:
+      - 1panel-network
+    restart: unless-stopped
+
+networks:
+  1panel-network:
+    external: true
