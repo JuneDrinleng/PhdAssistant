@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../service/auth_service.dart';
+import '../service/auth_service.dart'; // 这里包含 AuthException 的定义
 
 class LoginPage extends StatefulWidget {
   final AuthService auth;
@@ -15,8 +15,12 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+
   bool _submitting = false;
   String? _error;
+
+  // 显示/隐藏密码
+  bool _obscure = true;
 
   @override
   void dispose() {
@@ -35,7 +39,14 @@ class _LoginPageState extends State<LoginPage> {
       await widget.auth.login(_usernameCtrl.text.trim(), _passwordCtrl.text);
       if (mounted) context.go('/dashboard');
     } catch (e) {
-      setState(() => _error = '登录失败：${e.toString()}');
+      // 若 auth_service.dart 未更新，仍可安全显示错误
+      String msg;
+      if (e is AuthException) {
+        msg = e.message;
+      } else {
+        msg = e.toString();
+      }
+      setState(() => _error = msg);
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -70,15 +81,29 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: const InputDecoration(labelText: '用户名'),
                       validator: (v) =>
                           (v == null || v.trim().isEmpty) ? '请输入用户名' : null,
+                      textInputAction: TextInputAction.next,
                       autofocus: true,
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _passwordCtrl,
-                      decoration: const InputDecoration(labelText: '密码'),
-                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: '密码',
+                        suffixIcon: IconButton(
+                          tooltip: _obscure ? '显示密码' : '隐藏密码',
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                          icon: Icon(
+                            _obscure ? Icons.visibility_off : Icons.visibility,
+                          ),
+                        ),
+                      ),
+                      obscureText: _obscure,
+                      enableSuggestions: false,
+                      autocorrect: false,
+                      keyboardType: TextInputType.visiblePassword,
                       validator: (v) =>
                           (v == null || v.isEmpty) ? '请输入密码' : null,
+                      onFieldSubmitted: (_) => _onSubmit(), // 回车提交
                     ),
                     const SizedBox(height: 16),
                     if (_error != null) ...[
