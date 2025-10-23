@@ -16,7 +16,7 @@ Id                                       • Name                               
 Pixel_3a_API_34_extension_level_7_x86_64 • Pixel_3a_API_34_extension_level_7_x86_64 • Google       • android
 ```
 
-对于这种情况就可以直接：
+对于这种情况就可以直接（需要把 emulator 和 platform-tools 添加到环境变量）：
 
 ```
 emulator -avd Pixel_3a_API_34_extension_level_7_x86_64 -wipe-data -no-snapshot
