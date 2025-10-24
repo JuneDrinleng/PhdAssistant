@@ -5,10 +5,18 @@ import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../service/auth_service.dart';
+import '../utils/theme_manager.dart';
+import 'dashboard/widgets/sidebar.dart';
 
 class DashboardPage extends StatefulWidget {
   final AuthService auth;
-  const DashboardPage({super.key, required this.auth});
+  final ThemeManager themeManager;
+
+  const DashboardPage({
+    super.key,
+    required this.auth,
+    required this.themeManager,
+  });
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -40,6 +48,9 @@ class _DashboardPageState extends State<DashboardPage> {
   final _addTaskController = TextEditingController();
   DateTime? _addStartTime;
   DateTime? _addEndTime;
+
+  // 辅助方法获取主题色
+  Color get _primaryColor => widget.themeManager.getPrimaryColor();
 
   @override
   void initState() {
@@ -211,9 +222,6 @@ class _DashboardPageState extends State<DashboardPage> {
         await _loadRecords();
 
         _showToast('✅ 已发送！', showViewRecords: true);
-
-        // 可选：自动跳转到记录页面查看
-        // setState(() => _selectedIndex = 4);
       }
     } catch (e) {
       _showToast('发送失败：$e', isError: true);
@@ -443,7 +451,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     final snackBar = SnackBar(
       content: Text(message),
-      backgroundColor: isError ? Colors.red : const Color(0xFFFF6B81),
+      backgroundColor: isError ? Colors.red : _primaryColor,
       duration: const Duration(seconds: 2),
       action: showViewRecords
           ? SnackBarAction(
@@ -478,7 +486,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final username = widget.auth.user?['username']?.toString() ?? '未登录';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Row(
         children: [
           // 侧边栏
@@ -505,7 +513,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildSidebar(String username) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -529,13 +537,10 @@ class _DashboardPageState extends State<DashboardPage> {
                 IconButton(
                   onPressed: _toggleSidebar,
                   icon: const Icon(Icons.menu),
-                  color: const Color(0xFFFF6B81),
+                  color: _primaryColor,
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  '专注小助手',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+                Text('专注小助手', style: Theme.of(context).textTheme.titleMedium),
               ],
             ),
           ),
@@ -569,7 +574,17 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                         decoration: BoxDecoration(
                           color: isActive
-                              ? const Color(0xFFFF6B81).withOpacity(0.15)
+                              ? (widget.themeManager.currentTheme ==
+                                        AppTheme.dark
+                                    ? const Color.fromARGB(
+                                        255,
+                                        255,
+                                        255,
+                                        255,
+                                      ) // ✅ 暗色模式下选中用更浅的灰色
+                                    : _primaryColor.withOpacity(
+                                        0.15,
+                                      )) // 其他主题保持原样
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -579,8 +594,10 @@ class _DashboardPageState extends State<DashboardPage> {
                               item.icon,
                               size: 20,
                               color: isActive
-                                  ? const Color(0xFFFF6B81)
-                                  : const Color(0xFF666666),
+                                  ? _primaryColor
+                                  : Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color,
                             ),
                             const SizedBox(width: 12),
                             Text(
@@ -588,8 +605,10 @@ class _DashboardPageState extends State<DashboardPage> {
                               style: TextStyle(
                                 fontSize: 14,
                                 color: isActive
-                                    ? const Color(0xFFFF6B81)
-                                    : const Color(0xFF666666),
+                                    ? _primaryColor
+                                    : Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color,
                                 fontWeight: isActive
                                     ? FontWeight.w500
                                     : FontWeight.normal,
@@ -621,15 +640,33 @@ class _DashboardPageState extends State<DashboardPage> {
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.logout, size: 20, color: Color(0xFFFF4757)),
-                      SizedBox(width: 12),
+                      Icon(
+                        Icons.logout,
+                        size: 20,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color.fromARGB(
+                                255,
+                                255,
+                                255,
+                                255,
+                              ) // ✅ 暗色模式用亮红色
+                            : _primaryColor,
+                      ),
+                      const SizedBox(width: 12),
                       Text(
                         '退出登录',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFFFF4757),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color.fromARGB(
+                                  255,
+                                  255,
+                                  255,
+                                  255,
+                                ) // ✅ 暗色模式用亮红色
+                              : _primaryColor,
                         ),
                       ),
                     ],
@@ -652,7 +689,7 @@ class _DashboardPageState extends State<DashboardPage> {
             onPressed: _toggleSidebar,
             icon: const Icon(Icons.menu),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).cardColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -685,40 +722,38 @@ class _DashboardPageState extends State<DashboardPage> {
   // ========== 各页面 UI ==========
 
   Widget _buildHomePage(String username) {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 600),
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('👋', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 16),
-            Text(
-              'Welcome, $username!',
-              style: const TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF222222),
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 600),
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('👋', style: TextStyle(fontSize: 64)),
+              const SizedBox(height: 16),
+              Text(
+                'Welcome, $username!',
+                style: Theme.of(context).textTheme.displayLarge,
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '祝你度过一个愉快而高效的一天~',
-              style: TextStyle(fontSize: 16, color: Color(0xFF888888)),
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildQuickAction(Icons.timer, '专注', 1),
-                const SizedBox(width: 12),
-                _buildQuickAction(Icons.add_box_outlined, '添加', 2),
-                const SizedBox(width: 12),
-                _buildQuickAction(Icons.list, '记录', 4),
-              ],
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                '祝你度过一个愉快而高效的一天~',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildQuickAction(Icons.timer, '专注', 1),
+                  const SizedBox(width: 12),
+                  _buildQuickAction(Icons.add_box_outlined, '添加', 2),
+                  const SizedBox(width: 12),
+                  _buildQuickAction(Icons.list, '记录', 4),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -726,7 +761,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildQuickAction(IconData icon, String label, int index) {
     return Material(
-      color: Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: () {
@@ -747,12 +782,9 @@ class _DashboardPageState extends State<DashboardPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, color: const Color(0xFFFF6B81), size: 28),
+              Icon(icon, color: _primaryColor, size: 28),
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
-              ),
+              Text(label, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
         ),
@@ -761,110 +793,93 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildFocusPage() {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
-        padding: const EdgeInsets.all(24),
-        child: Card(
-          elevation: 8,
-          shadowColor: Colors.black.withOpacity(0.08),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '🎯 专注',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 30),
-                const Text(
-                  '当前任务',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 8,
+            shadowColor: Colors.black.withOpacity(0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🎯 专注',
+                    style: Theme.of(context).textTheme.displayMedium,
                   ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _focusTaskController,
-                  readOnly: _isFocusing,
-                  decoration: InputDecoration(
-                    hintText: '输入你要专注的内容…',
-                    filled: true,
-                    fillColor: _isFocusing
-                        ? const Color(0xFFF5F5F5)
-                        : Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE0E0E0),
-                        width: 2,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE0E0E0),
-                        width: 2,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFFF6B81),
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                const Text(
-                  '已用时',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _formatDuration(_elapsedSeconds),
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF222222),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _toggleFocus,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B81),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 30),
+                  Text('当前任务', style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _focusTaskController,
+                    readOnly: _isFocusing,
+                    decoration: InputDecoration(
+                      hintText: '输入你要专注的内容…',
+                      filled: true,
+                      fillColor: _isFocusing
+                          ? Theme.of(context).disabledColor.withOpacity(0.1)
+                          : Theme.of(context).cardColor,
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE0E0E0),
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      _isFocusing ? '结束专注' : '开始专注',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE0E0E0),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: _primaryColor, width: 2),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 30),
+                  Text('已用时', style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  Text(
+                    _formatDuration(_elapsedSeconds),
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _toggleFocus,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        _isFocusing ? '结束专注' : '开始专注',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -873,246 +888,233 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildAddFocusPage() {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
-        padding: const EdgeInsets.all(24),
-        child: Card(
-          elevation: 8,
-          shadowColor: Colors.black.withOpacity(0.08),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '⏰ 添加专注时间',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 30),
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 8,
+            shadowColor: Colors.black.withOpacity(0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '⏰ 添加专注时间',
+                    style: Theme.of(context).textTheme.displayMedium,
+                  ),
+                  const SizedBox(height: 30),
 
-                // 时间选择（开始和结束在同一行）
-                const Text(
-                  '时间选择',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
+                  // 时间选择（开始和结束在同一行）
+                  Text('时间选择', style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // 开始时间
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '开始时间',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 4),
+                            InkWell(
+                              onTap: () async {
+                                final date = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (date != null) {
+                                  final time = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
+                                  );
+                                  if (time != null) {
+                                    setState(() {
+                                      _addStartTime = DateTime(
+                                        date.year,
+                                        date.month,
+                                        date.day,
+                                        time.hour,
+                                        time.minute,
+                                      );
+                                    });
+                                  }
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: const Color(0xFFE0E0E0),
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  _addStartTime == null
+                                      ? '选择'
+                                      : '${_addStartTime!.month}/${_addStartTime!.day} '
+                                            '${_addStartTime!.hour.toString().padLeft(2, '0')}:${_addStartTime!.minute.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: _addStartTime == null
+                                        ? Theme.of(
+                                            context,
+                                          ).textTheme.bodySmall?.color
+                                        : Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 15),
+                      // 结束时间
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '结束时间',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            const SizedBox(height: 4),
+                            InkWell(
+                              onTap: () async {
+                                final date = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime.now(),
+                                );
+                                if (date != null) {
+                                  final time = await showTimePicker(
+                                    context: context,
+                                    initialTime: TimeOfDay.now(),
+                                  );
+                                  if (time != null) {
+                                    setState(() {
+                                      _addEndTime = DateTime(
+                                        date.year,
+                                        date.month,
+                                        date.day,
+                                        time.hour,
+                                        time.minute,
+                                      );
+                                    });
+                                  }
+                                }
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: const Color(0xFFE0E0E0),
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  _addEndTime == null
+                                      ? '选择'
+                                      : '${_addEndTime!.month}/${_addEndTime!.day} '
+                                            '${_addEndTime!.hour.toString().padLeft(2, '0')}:${_addEndTime!.minute.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: _addEndTime == null
+                                        ? Theme.of(
+                                            context,
+                                          ).textTheme.bodySmall?.color
+                                        : Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    // 开始时间
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '开始时间',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          InkWell(
-                            onTap: () async {
-                              final date = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime.now(),
-                              );
-                              if (date != null) {
-                                final time = await showTimePicker(
-                                  context: context,
-                                  initialTime: TimeOfDay.now(),
-                                );
-                                if (time != null) {
-                                  setState(() {
-                                    _addStartTime = DateTime(
-                                      date.year,
-                                      date.month,
-                                      date.day,
-                                      time.hour,
-                                      time.minute,
-                                    );
-                                  });
-                                }
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 14,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFFE0E0E0),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                _addStartTime == null
-                                    ? '选择'
-                                    : '${_addStartTime!.month}/${_addStartTime!.day} '
-                                          '${_addStartTime!.hour.toString().padLeft(2, '0')}:${_addStartTime!.minute.toString().padLeft(2, '0')}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: _addStartTime == null
-                                      ? const Color(0xFF888888)
-                                      : Colors.black,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 15),
-                    // 结束时间
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '结束时间',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          InkWell(
-                            onTap: () async {
-                              final date = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime.now(),
-                              );
-                              if (date != null) {
-                                final time = await showTimePicker(
-                                  context: context,
-                                  initialTime: TimeOfDay.now(),
-                                );
-                                if (time != null) {
-                                  setState(() {
-                                    _addEndTime = DateTime(
-                                      date.year,
-                                      date.month,
-                                      date.day,
-                                      time.hour,
-                                      time.minute,
-                                    );
-                                  });
-                                }
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 14,
-                              ),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFFE0E0E0),
-                                  width: 2,
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                _addEndTime == null
-                                    ? '选择'
-                                    : '${_addEndTime!.month}/${_addEndTime!.day} '
-                                          '${_addEndTime!.hour.toString().padLeft(2, '0')}:${_addEndTime!.minute.toString().padLeft(2, '0')}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: _addEndTime == null
-                                      ? const Color(0xFF888888)
-                                      : Colors.black,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
 
-                const SizedBox(height: 20),
-                const Text(
-                  '专注内容',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _addTaskController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: '描述你要专注的任务...',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE0E0E0),
-                        width: 2,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE0E0E0),
-                        width: 2,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFFF6B81),
-                        width: 2,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _submitFocusPlan,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF6B81),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
+                  const SizedBox(height: 20),
+                  Text('专注内容', style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _addTaskController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: '描述你要专注的任务...',
+                      filled: true,
+                      fillColor: Theme.of(context).cardColor,
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE0E0E0),
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      '🚀 发送专注计划',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE0E0E0),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: _primaryColor, width: 2),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _submitFocusPlan,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        '🚀 发送专注计划',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1121,114 +1123,102 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildStatsPage() {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
-        padding: const EdgeInsets.all(24),
-        child: Card(
-          elevation: 8,
-          shadowColor: Colors.black.withOpacity(0.08),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '📊 专注统计',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildStatsTab('日', 'day'),
-                    const SizedBox(width: 8),
-                    _buildStatsTab('周', 'week'),
-                    const SizedBox(width: 8),
-                    _buildStatsTab('月', 'month'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  '总计 ${_formatMinutes(_totalMinutes)}　日均 ${_formatMinutes(_avgMinutes)}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF666666),
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 8,
+            shadowColor: Colors.black.withOpacity(0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '📊 专注统计',
+                    style: Theme.of(context).textTheme.displayMedium,
                   ),
-                ),
-                const SizedBox(height: 20),
-                if (_taskMinutes.isEmpty)
-                  const Column(
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.bar_chart,
-                        size: 100,
-                        color: Color(0xFFFF6B81),
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        '暂无数据',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF888888),
-                        ),
-                      ),
+                      _buildStatsTab('日', 'day'),
+                      const SizedBox(width: 8),
+                      _buildStatsTab('周', 'week'),
+                      const SizedBox(width: 8),
+                      _buildStatsTab('月', 'month'),
                     ],
-                  )
-                else
-                  ..._taskMinutes.entries.map((entry) {
-                    final percent =
-                        (_totalMinutes > 0
-                                ? (entry.value / _totalMinutes) * 100
-                                : 0)
-                            .toStringAsFixed(1);
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  entry.key,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    '总计 ${_formatMinutes(_totalMinutes)}　日均 ${_formatMinutes(_avgMinutes)}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 20),
+                  if (_taskMinutes.isEmpty)
+                    Column(
+                      children: [
+                        Icon(Icons.bar_chart, size: 100, color: _primaryColor),
+                        const SizedBox(height: 20),
+                        Text(
+                          '暂无数据',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    )
+                  else
+                    ..._taskMinutes.entries.map((entry) {
+                      final percent =
+                          (_totalMinutes > 0
+                                  ? (entry.value / _totalMinutes) * 100
+                                  : 0)
+                              .toStringAsFixed(1);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    entry.key,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleSmall,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              Text(
-                                '${_formatMinutes(entry.value)} ($percent%)',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF666666),
+                                Text(
+                                  '${_formatMinutes(entry.value)} ($percent%)',
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          LinearProgressIndicator(
-                            value: _totalMinutes > 0
-                                ? entry.value / _totalMinutes
-                                : 0,
-                            backgroundColor: Colors.grey.shade200,
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFFFF6B81),
+                              ],
                             ),
-                            minHeight: 8,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-              ],
+                            const SizedBox(height: 4),
+                            LinearProgressIndicator(
+                              value: _totalMinutes > 0
+                                  ? entry.value / _totalMinutes
+                                  : 0,
+                              backgroundColor: Colors.grey.shade200,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                _primaryColor,
+                              ),
+                              minHeight: 8,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                ],
+              ),
             ),
           ),
         ),
@@ -1240,7 +1230,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final isActive = _statsScope == scope;
     return Material(
       color: isActive
-          ? const Color(0xFFFF6B81).withOpacity(0.18)
+          ? _primaryColor.withOpacity(0.18)
           : Colors.black.withOpacity(0.05),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
@@ -1255,7 +1245,7 @@ class _DashboardPageState extends State<DashboardPage> {
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: isActive
-                  ? const Color(0xFFFF6B81).withOpacity(0.22)
+                  ? _primaryColor.withOpacity(0.22)
                   : Colors.black.withOpacity(0.08),
             ),
           ),
@@ -1265,8 +1255,8 @@ class _DashboardPageState extends State<DashboardPage> {
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: isActive
-                  ? const Color(0xFFFF6B81)
-                  : const Color(0xFF666666),
+                  ? _primaryColor
+                  : Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ),
@@ -1283,9 +1273,9 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             Row(
               children: [
-                const Text(
-                  '🗒️ 专注记录',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+                Text(
+                  '🗂️ 专注记录',
+                  style: Theme.of(context).textTheme.displayMedium,
                 ),
                 const Spacer(),
                 if (_records.isNotEmpty)
@@ -1294,8 +1284,20 @@ class _DashboardPageState extends State<DashboardPage> {
                     icon: const Icon(Icons.delete_sweep, size: 18),
                     label: const Text('清空'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
+                      foregroundColor:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? const Color.fromARGB(255, 139, 53, 53) // ✅ 暗色模式：亮红色
+                          : Colors.red,
+                      side: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color.fromARGB(
+                                255,
+                                139,
+                                53,
+                                53,
+                              ) // ✅ 边框也用亮红色
+                            : Colors.red,
+                      ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 12,
@@ -1308,8 +1310,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   icon: const Icon(Icons.refresh, size: 18),
                   label: const Text('刷新'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF6B81).withOpacity(0.12),
-                    foregroundColor: const Color(0xFFFF6B81),
+                    backgroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFF374151) // ✅ 暗色：深灰背景
+                        : _primaryColor.withOpacity(0.12),
+                    foregroundColor:
+                        Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFFF3F4F6) // ✅ 暗色：白色文字和图标
+                        : _primaryColor,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -1324,32 +1332,36 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFFFFE5EA), Color(0xFFFFF1F5)],
+                    colors: [
+                      _primaryColor.withOpacity(0.1),
+                      _primaryColor.withOpacity(0.05),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: _loadingRecords
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(
+                        child: CircularProgressIndicator(color: _primaryColor),
+                      )
                     : _records.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.inbox_outlined,
                               size: 64,
-                              color: Color(0xFF888888),
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.color,
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
                               '暂无记录',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Color(0xFF888888),
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ],
                         ),
@@ -1383,14 +1395,24 @@ class _DashboardPageState extends State<DashboardPage> {
                               contentPadding: const EdgeInsets.all(16),
                               title: Text(
                                 record['task']?.toString() ?? '(无任务名)',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                style: Theme.of(context).textTheme.titleMedium,
                               ),
                               subtitle: Text(
                                 '${start.month}/${start.day} ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')} → '
                                 '${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}',
-                                style: const TextStyle(fontSize: 12),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? const Color.fromARGB(
+                                              255,
+                                              200,
+                                              200,
+                                              200,
+                                            ) // ✅ 暗色模式用浅色文字
+                                          : null, // 浅色模式保持默认
+                                    ),
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -1401,36 +1423,59 @@ class _DashboardPageState extends State<DashboardPage> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(
-                                        0xFFFF6B81,
-                                      ).withOpacity(0.12),
+                                      color: _primaryColor.withOpacity(0.12),
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                     child: Text(
                                       _formatMinutes(duration.inMinutes),
-                                      style: const TextStyle(
-                                        fontSize: 12,
+                                      style: TextStyle(
+                                        fontSize: 11,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFFFF6B81),
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? const Color(
+                                                0xFFF3F4F6,
+                                              ) // ✅ 暗色模式：白色文字
+                                            : _primaryColor,
                                       ),
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.edit_outlined,
-                                      color: Color(0xFFFF6B81),
+                                      size: 18,
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? const Color(0xFFF3F4F6) // ✅ 暗色：白色图标
+                                          : _primaryColor,
                                     ),
                                     onPressed: () => _editRecord(record),
                                     tooltip: '编辑',
+                                    padding: EdgeInsets.all(8),
+                                    constraints: BoxConstraints(),
                                   ),
                                   IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.delete_outline,
-                                      color: Colors.red,
+                                      size: 18,
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? const Color.fromARGB(
+                                              255,
+                                              139,
+                                              53,
+                                              53,
+                                            ) // ✅ 暗色模式：亮红色
+                                          : Colors.red, // 浅色模式：深红色
                                     ),
                                     onPressed: () =>
                                         _deleteRecord(record['id']),
                                     tooltip: '删除',
+                                    padding: const EdgeInsets.all(8),
+                                    constraints: const BoxConstraints(),
                                   ),
                                 ],
                               ),
@@ -1447,98 +1492,98 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildSettingsPage(String username) {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
-        padding: const EdgeInsets.all(24),
-        child: Card(
-          elevation: 8,
-          shadowColor: Colors.black.withOpacity(0.08),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '⚙️ 设置',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 30),
-                const Text(
-                  '用户名',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF333333),
+    return SingleChildScrollView(
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(24),
+          child: Card(
+            elevation: 8,
+            shadowColor: Colors.black.withOpacity(0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '⚙️ 设置',
+                    style: Theme.of(context).textTheme.displayMedium,
                   ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: TextEditingController(text: username),
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFFF5F5F5),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(
-                        color: Color(0xFFE0E0E0),
-                        width: 2,
+                  const SizedBox(height: 30),
+                  Text('用户名', style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: TextEditingController(text: username),
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Theme.of(
+                        context,
+                      ).disabledColor.withOpacity(0.1),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFE0E0E0),
+                          width: 2,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 30),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.black.withOpacity(0.08)),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.palette, size: 18),
-                          SizedBox(width: 8),
-                          Text(
-                            '主题颜色',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        height: 10,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF6B81), Color(0xFFFF4757)],
-                          ),
-                          borderRadius: BorderRadius.circular(999),
+                  const SizedBox(height: 30),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      border: Border.all(color: Colors.black.withOpacity(0.08)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.palette, size: 18, color: _primaryColor),
+                            const SizedBox(width: 8),
+                            Text(
+                              '主题颜色',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildThemeChip('Red', true),
-                          _buildThemeChip('Blue', false),
-                          _buildThemeChip('Purple', false),
-                          _buildThemeChip('Green', false),
-                          _buildThemeChip('Dark', false),
-                        ],
-                      ),
-                    ],
+                        const SizedBox(height: 12),
+                        Container(
+                          height: 10,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                _primaryColor,
+                                _primaryColor.withOpacity(0.7),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _buildThemeChip('Red', AppTheme.red),
+                            _buildThemeChip('Blue', AppTheme.blue),
+                            _buildThemeChip('Purple', AppTheme.purple),
+                            _buildThemeChip('Green', AppTheme.green),
+                            _buildThemeChip('Dark', AppTheme.dark),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1546,22 +1591,26 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildThemeChip(String label, bool active) {
+  Widget _buildThemeChip(String label, AppTheme theme) {
+    final isActive = widget.themeManager.currentTheme == theme;
+
     return Material(
-      color: active
-          ? const Color(0xFFFF6B81).withOpacity(0.18)
+      color: isActive
+          ? _primaryColor.withOpacity(0.18)
           : Colors.black.withOpacity(0.05),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          widget.themeManager.setTheme(theme);
+        },
         borderRadius: BorderRadius.circular(999),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: active
-                  ? const Color(0xFFFF6B81).withOpacity(0.22)
+              color: isActive
+                  ? _primaryColor.withOpacity(0.22)
                   : Colors.black.withOpacity(0.08),
             ),
           ),
@@ -1570,7 +1619,9 @@ class _DashboardPageState extends State<DashboardPage> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: active ? const Color(0xFFFF6B81) : const Color(0xFF666666),
+              color: isActive
+                  ? _primaryColor
+                  : Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ),

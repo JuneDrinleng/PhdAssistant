@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 import 'package:window_manager/window_manager.dart';
 
 import '../service/auth_service.dart';
+import '../utils/theme_manager.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
 import '../pages/dashboard_page.dart';
@@ -17,7 +18,7 @@ Future<void> main() async {
 
     const windowOptions = WindowOptions(
       size: Size(800, 600), // 窗口大小
-      minimumSize: Size(600, 450), // 最小尺寸
+      minimumSize: Size(800, 600), // 最小尺寸
       center: true, // 居中显示
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
@@ -33,6 +34,8 @@ Future<void> main() async {
 
   final auth = AuthService();
   await auth.restoreAndValidateSession();
+
+  final themeManager = ThemeManager();
 
   final router = GoRouter(
     refreshListenable: auth,
@@ -65,62 +68,32 @@ Future<void> main() async {
       ),
       GoRoute(
         path: '/dashboard',
-        builder: (context, state) => DashboardPage(auth: auth),
+        builder: (context, state) =>
+            DashboardPage(auth: auth, themeManager: themeManager),
       ),
     ],
   );
 
-  runApp(
-    MaterialApp.router(
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // 使用思源黑体
-        fontFamily: 'SourceHanSans',
+  runApp(MyApp(router: router, themeManager: themeManager));
+}
 
-        // 优化字体渲染
-        useMaterial3: true,
+class MyApp extends StatelessWidget {
+  final GoRouter router;
+  final ThemeManager themeManager;
 
-        // 文本主题 - 优化中文显示
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.5,
-            height: 1.2,
-          ),
-          displayMedium: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.5,
-            height: 1.3,
-          ),
-          titleLarge: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            height: 1.3,
-          ),
-          bodyLarge: TextStyle(
-            fontSize: 16,
-            height: 1.6, // 增加行高，中文更舒适
-            letterSpacing: 0.5,
-          ),
-          bodyMedium: TextStyle(fontSize: 14, height: 1.6, letterSpacing: 0.3),
-          labelLarge: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-          ),
-        ),
+  const MyApp({super.key, required this.router, required this.themeManager});
 
-        // 主题色
-        primaryColor: const Color(0xFFE53935),
-        colorScheme: ColorScheme.light(
-          primary: const Color(0xFFE53935),
-          secondary: const Color(0xFFE53935),
-          surface: Colors.white,
-        ),
-      ),
-    ),
-  );
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: themeManager,
+      builder: (context, _) {
+        return MaterialApp.router(
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
+          theme: themeManager.getThemeData(),
+        );
+      },
+    );
+  }
 }
