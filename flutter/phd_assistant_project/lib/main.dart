@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'dart:io' show Platform;
 import 'package:window_manager/window_manager.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../service/auth_service.dart';
 import '../utils/theme_manager.dart';
 import '../pages/login_page.dart';
@@ -19,8 +20,8 @@ Future<void> main() async {
       systemNavigationBarIconBrightness: Brightness.dark, // 导航栏图标深色
     ),
   );
-  // Windows 窗口配置
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+  // Windows 窗口配置 - 仅在非 Web 平台执行
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     await windowManager.ensureInitialized();
 
     const windowOptions = WindowOptions(
@@ -58,7 +59,7 @@ Future<void> main() async {
       // 未登录且不在认证页面，跳转到登录页
       if (!loggedIn && !onAuthPage) return '/login';
 
-      // 已登录且在认证页面，跳转到dashboard
+      // 已登录且在认证页面,跳转到dashboard
       if (loggedIn && onAuthPage) return '/dashboard';
 
       return null;
