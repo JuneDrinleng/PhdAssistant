@@ -29,13 +29,12 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   int _selectedIndex = 0;
-  bool _sidebarCollapsed = false;
 
-  // 记录列表（共享状态）
+  // 记录列表(共享状态)
   List<Map<String, dynamic>> _records = [];
   bool _loadingRecords = false;
 
-  // 移动端索引映射：移动端显示的索引 -> 实际页面索引
+  // 移动端索引映射:移动端显示的索引 -> 实际页面索引
   final List<int> _mobileIndexMap = [1, 3, 4, 5]; // 专注(1)、统计(3)、记录(4)、设置(5)
 
   // 使用 AuthService 的 Dio 实例
@@ -47,7 +46,7 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadRecords();
   }
 
-  // ========== 记录管理（共享功能） ==========
+  // ========== 记录管理(共享功能) ==========
 
   Future<void> _loadRecords() async {
     setState(() => _loadingRecords = true);
@@ -71,7 +70,7 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       setState(() => _loadingRecords = false);
-      _showToast('加载失败：$e', isError: true);
+      _showToast('加载失败:$e', isError: true);
     }
   }
 
@@ -80,7 +79,7 @@ class _DashboardPageState extends State<DashboardPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('确认删除'),
-        content: const Text('确认删除这条专注记录？此操作不可撤销。'),
+        content: const Text('确认删除这条专注记录?此操作不可撤销。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -106,7 +105,7 @@ class _DashboardPageState extends State<DashboardPage> {
         await _loadRecords();
       }
     } catch (e) {
-      _showToast('删除失败：$e', isError: true);
+      _showToast('删除失败:$e', isError: true);
     }
   }
 
@@ -159,7 +158,7 @@ class _DashboardPageState extends State<DashboardPage> {
         await _loadRecords();
       }
     } catch (e) {
-      _showToast('更新失败：$e', isError: true);
+      _showToast('更新失败:$e', isError: true);
     }
   }
 
@@ -168,7 +167,7 @@ class _DashboardPageState extends State<DashboardPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('确认清空'),
-        content: const Text('确认清空所有专注记录？此操作不可撤销。'),
+        content: const Text('确认清空所有专注记录?此操作不可撤销。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -193,7 +192,7 @@ class _DashboardPageState extends State<DashboardPage> {
         await _loadRecords();
       }
     } catch (e) {
-      _showToast('清空失败：$e', isError: true);
+      _showToast('清空失败:$e', isError: true);
     }
   }
 
@@ -209,17 +208,11 @@ class _DashboardPageState extends State<DashboardPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  void _toggleSidebar() {
-    setState(() {
-      _sidebarCollapsed = !_sidebarCollapsed;
-    });
-  }
-
   // ========== 主界面布局 ==========
 
   @override
   Widget build(BuildContext context) {
-    // 响应式布局：根据屏幕宽度判断是否使用侧边栏
+    // 响应式布局:根据屏幕宽度判断是否使用侧边栏
     final isDesktop = MediaQuery.of(context).size.width > 600;
 
     return Scaffold(
@@ -228,46 +221,33 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // 桌面端布局（侧边栏 + 内容）
+  // 桌面端布局(固定侧边栏 + 内容区)
   Widget _buildDesktopLayout() {
     return Row(
       children: [
-        // 侧边栏
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: _sidebarCollapsed ? 0 : 260,
-          child: _sidebarCollapsed
-              ? null
-              : Sidebar(
-                  selectedIndex: _selectedIndex,
-                  onItemTap: (index) {
-                    setState(() => _selectedIndex = index);
-                  },
-                  onToggle: _toggleSidebar,
-                  auth: widget.auth,
-                  themeManager: widget.themeManager,
-                ),
+        // 固定的窄侧边栏 (只显示图标)
+        Sidebar(
+          selectedIndex: _selectedIndex,
+          onItemTap: (index) {
+            setState(() => _selectedIndex = index);
+          },
+          auth: widget.auth,
+          themeManager: widget.themeManager,
+          isCompact: true, // 紧凑模式
         ),
 
         // 主内容区
-        Expanded(
-          child: Column(
-            children: [
-              if (_sidebarCollapsed) _buildTopBar(),
-              Expanded(child: _buildContent()),
-            ],
-          ),
-        ),
+        Expanded(child: _buildContent()),
       ],
     );
   }
 
-  // 移动端布局（底部导航栏）
+  // 移动端布局(底部导航栏)
   Widget _buildMobileLayout() {
     // 计算移动端当前选中的索引
     int mobileIndex = _mobileIndexMap.indexOf(_selectedIndex);
     if (mobileIndex == -1) {
-      // 如果当前页面不在移动端导航中，默认显示第一个（专注）
+      // 如果当前页面不在移动端导航中,默认显示第一个(专注)
       mobileIndex = 0;
       _selectedIndex = _mobileIndexMap[0];
     }
@@ -292,32 +272,11 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // 顶部栏（侧边栏收起时显示）
-  Widget _buildTopBar() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _toggleSidebar,
-            icon: const Icon(Icons.menu),
-            style: IconButton.styleFrom(
-              backgroundColor: Theme.of(context).cardColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   // 根据选中索引渲染对应内容
   Widget _buildContent() {
     final isDesktop = MediaQuery.of(context).size.width > 600;
 
-    // 移动端特殊处理：索引1显示组合视图
+    // 移动端特殊处理:索引1显示组合视图
     if (!isDesktop && _selectedIndex == 1) {
       return MobileFocusView(
         auth: widget.auth,

@@ -144,7 +144,7 @@ class _StatsViewState extends State<StatsView> {
                         Text(
                           '专注统计',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

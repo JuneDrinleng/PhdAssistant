@@ -382,7 +382,7 @@ class _SettingsViewState extends State<SettingsView> {
                         Text(
                           '设置',
                           style: TextStyle(
-                            fontSize: 28,
+                            fontSize: 20,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

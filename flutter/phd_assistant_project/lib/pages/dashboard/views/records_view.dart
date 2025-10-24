@@ -463,7 +463,7 @@ class RecordsView extends StatelessWidget {
                           const Text(
                             '专注记录',
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: 20,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

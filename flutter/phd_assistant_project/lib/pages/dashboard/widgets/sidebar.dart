@@ -15,7 +15,7 @@ class Sidebar extends StatelessWidget {
   final Function(int) onItemTap;
   final AuthService auth;
   final ThemeManager themeManager;
-  final VoidCallback onToggle;
+  final bool isCompact; // 是否为紧凑模式(只显示图标)
 
   const Sidebar({
     super.key,
@@ -23,7 +23,7 @@ class Sidebar extends StatelessWidget {
     required this.onItemTap,
     required this.auth,
     required this.themeManager,
-    required this.onToggle,
+    this.isCompact = false,
   });
 
   // 获取主题色
@@ -41,10 +41,8 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final username = auth.user?['username']?.toString() ?? '未登录';
-
     return Container(
-      width: 260,
+      width: isCompact ? 72 : 260,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         boxShadow: [
@@ -57,7 +55,7 @@ class Sidebar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 头部
+          // 头部 Logo
           _buildHeader(context),
 
           // 菜单列表
@@ -73,30 +71,34 @@ class Sidebar extends StatelessWidget {
   // 构建头部
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(
+        vertical: 20,
+        horizontal: isCompact ? 0 : 20,
+      ),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(color: Colors.black.withOpacity(0.08)),
         ),
       ),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: onToggle,
-            icon: const Icon(Icons.menu),
-            color: _primaryColor,
-          ),
-          const SizedBox(width: 8),
-          Text('专注小助手', style: Theme.of(context).textTheme.titleMedium),
-        ],
-      ),
+      child: isCompact
+          ? Icon(Icons.apps, color: _primaryColor, size: 28)
+          : Row(
+              children: [
+                Icon(Icons.apps, color: _primaryColor),
+                const SizedBox(width: 8),
+                Text('专注小助手', style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
     );
   }
 
   // 构建菜单列表
   Widget _buildMenuList(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 8 : 10,
+        vertical: 20,
+      ),
       itemCount: _menuItems.length,
       itemBuilder: (context, index) {
         final item = _menuItems[index];
@@ -104,52 +106,65 @@ class Sidebar extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 4),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => onItemTap(index),
-              borderRadius: BorderRadius.circular(10),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? (themeManager.currentTheme == AppTheme.dark
-                            ? const Color.fromARGB(
-                                255,
-                                255,
-                                255,
-                                255,
-                              ) // 暗色模式：更浅的灰色
-                            : _primaryColor.withOpacity(0.15)) // 其他主题
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      item.icon,
-                      size: 20,
-                      color: isActive
-                          ? _primaryColor
-                          : Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      item.label,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isActive
-                            ? _primaryColor
-                            : Theme.of(context).textTheme.bodyMedium?.color,
-                        fontWeight: isActive
-                            ? FontWeight.w500
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ],
+          child: Tooltip(
+            message: isCompact ? item.label : '',
+            preferBelow: false,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => onItemTap(index),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 0 : 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? (themeManager.currentTheme == AppTheme.dark
+                              ? const Color.fromARGB(255, 255, 255, 255)
+                              : _primaryColor.withOpacity(0.15))
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: isCompact
+                      ? Center(
+                          child: Icon(
+                            item.icon,
+                            size: 24,
+                            color: isActive
+                                ? _primaryColor
+                                : Theme.of(context).textTheme.bodyMedium?.color,
+                          ),
+                        )
+                      : Row(
+                          children: [
+                            Icon(
+                              item.icon,
+                              size: 20,
+                              color: isActive
+                                  ? _primaryColor
+                                  : Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              item.label,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isActive
+                                    ? _primaryColor
+                                    : Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color,
+                                fontWeight: isActive
+                                    ? FontWeight.w500
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),
@@ -162,39 +177,55 @@ class Sidebar extends StatelessWidget {
   // 构建退出登录按钮
   Widget _buildLogoutButton(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(10),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () async {
-            await auth.logout();
-            if (context.mounted) context.go('/login');
-          },
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.logout,
-                  size: 20,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors
-                            .white // 暗色模式用白色
-                      : _primaryColor,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '退出登录',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors
-                              .white // 暗色模式用白色
-                        : _primaryColor,
-                  ),
-                ),
-              ],
+      padding: EdgeInsets.all(isCompact ? 8 : 10),
+      child: Tooltip(
+        message: isCompact ? '退出登录' : '',
+        preferBelow: false,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () async {
+              await auth.logout();
+              if (context.mounted) context.go('/login');
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: isCompact ? 0 : 16,
+                vertical: 12,
+              ),
+              child: isCompact
+                  ? Center(
+                      child: Icon(
+                        Icons.logout,
+                        size: 24,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : _primaryColor,
+                      ),
+                    )
+                  : Row(
+                      children: [
+                        Icon(
+                          Icons.logout,
+                          size: 20,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : _primaryColor,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '退出登录',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : _primaryColor,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ),
