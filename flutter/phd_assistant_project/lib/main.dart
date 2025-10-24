@@ -59,12 +59,17 @@ Future<void> main() async {
     routes: [
       GoRoute(
         path: '/login',
-        builder: (context, state) => LoginPage(auth: auth),
+        builder: (context, state) => LoginPage(
+          auth: auth,
+          themeManager: themeManager, // 添加这个参数
+        ),
       ),
       GoRoute(
         path: '/register',
-        name: 'register',
-        builder: (context, state) => RegisterPage(auth: auth),
+        builder: (context, state) => RegisterPage(
+          auth: auth,
+          themeManager: themeManager, // 添加这个参数
+        ),
       ),
       GoRoute(
         path: '/dashboard',
