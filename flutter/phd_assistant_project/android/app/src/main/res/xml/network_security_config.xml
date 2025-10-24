@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 或者只允许特定域名 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">phdapi.junedrinleng.com</domain>
+    </domain-config>
+</network-security-config>

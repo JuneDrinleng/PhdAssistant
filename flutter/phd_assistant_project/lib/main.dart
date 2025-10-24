@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io' show Platform;
 import 'package:window_manager/window_manager.dart';
-
+import 'package:flutter/services.dart';
 import '../service/auth_service.dart';
 import '../utils/theme_manager.dart';
 import '../pages/login_page.dart';
@@ -11,7 +11,14 @@ import '../pages/dashboard_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent, // 状态栏透明
+      statusBarIconBrightness: Brightness.dark, // 状态栏图标深色
+      systemNavigationBarColor: Colors.white, // 导航栏白色
+      systemNavigationBarIconBrightness: Brightness.dark, // 导航栏图标深色
+    ),
+  );
   // Windows 窗口配置
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await windowManager.ensureInitialized();

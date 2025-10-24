@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // ✅ 添加这个导入
 import 'package:dio/dio.dart';
 import '../service/auth_service.dart';
 import '../utils/theme_manager.dart';
@@ -212,12 +213,26 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 响应式布局:根据屏幕宽度判断是否使用侧边栏
     final isDesktop = MediaQuery.of(context).size.width > 600;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+    // ✅ 用 AnnotatedRegion 包裹整个页面
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: isDark
+            ? const Color(0xFF1A1D23) // Dashboard 深色
+            : Colors.white, // Dashboard 白色
+        systemNavigationBarIconBrightness: isDark
+            ? Brightness.light
+            : Brightness.dark,
+        systemNavigationBarDividerColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+      ),
     );
   }
 
@@ -244,30 +259,48 @@ class _DashboardPageState extends State<DashboardPage> {
 
   // 移动端布局(底部导航栏)
   Widget _buildMobileLayout() {
-    // 计算移动端当前选中的索引
     int mobileIndex = _mobileIndexMap.indexOf(_selectedIndex);
     if (mobileIndex == -1) {
-      // 如果当前页面不在移动端导航中,默认显示第一个(专注)
       mobileIndex = 0;
       _selectedIndex = _mobileIndexMap[0];
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: SafeArea(bottom: false, child: _buildContent()),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: mobileIndex,
-        onTap: (index) {
-          // 将移动端索引映射到实际页面索引
-          setState(() => _selectedIndex = _mobileIndexMap[index]);
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: widget.themeManager.getPrimaryColor(),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.timer), label: '专注'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: '统计'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: '记录'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'),
-        ],
+      bottomNavigationBar: Container(
+        // ✅ 添加底部装饰，覆盖系统栏区域
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1A1D23) : Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 4,
+              offset: const Offset(0, -1),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: BottomNavigationBar(
+            currentIndex: mobileIndex,
+            onTap: (index) {
+              setState(() => _selectedIndex = _mobileIndexMap[index]);
+            },
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: widget.themeManager.getPrimaryColor(),
+            unselectedItemColor: isDark ? Colors.grey.shade600 : Colors.grey,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            items: const [
+              BottomNavigationBarItem(icon: Icon(Icons.timer), label: '专注'),
+              BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: '统计'),
+              BottomNavigationBarItem(icon: Icon(Icons.list), label: '记录'),
+              BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'),
+            ],
+          ),
+        ),
       ),
     );
   }
