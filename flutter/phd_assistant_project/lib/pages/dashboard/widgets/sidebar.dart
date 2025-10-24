@@ -117,7 +117,12 @@ class Sidebar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isActive
                       ? (themeManager.currentTheme == AppTheme.dark
-                            ? const Color(0xFF2A2D35) // 暗色模式：更浅的灰色
+                            ? const Color.fromARGB(
+                                255,
+                                255,
+                                255,
+                                255,
+                              ) // 暗色模式：更浅的灰色
                             : _primaryColor.withOpacity(0.15)) // 其他主题
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
