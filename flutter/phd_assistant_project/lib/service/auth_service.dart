@@ -12,6 +12,9 @@ class AppApi {
   /// 登录接口相对路径（不要以 `/` 开头）
   /// 例如后端是 /api/auth/login，这里就写 'auth/login'
   static const String loginPath = '/auth/login';
+
+  /// 注册接口相对路径
+  static const String registerPath = '/auth/register';
 }
 
 /// 自定义异常，登录失败时抛出更友好的信息
@@ -149,6 +152,75 @@ class AuthService extends ChangeNotifier {
       if (data is String) return data;
     } catch (_) {}
     return null;
+  }
+
+  /// 注册：按你的接口字段名对齐
+  Future<void> register(String username, String password) async {
+    Response res;
+    try {
+      // 使用相对路径，避免覆盖 baseUrl 的 /api
+      res = await _dio.post(
+        AppApi.registerPath,
+        data: {'username': username, 'password': password},
+      );
+    } on DioException catch (e) {
+      throw AuthException('网络错误：${e.message}');
+    }
+
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print('Login URL => ${res.requestOptions.uri}');
+    }
+
+    final code = res.statusCode ?? 0;
+    if (code == 404) {
+      throw AuthException(
+        '登录接口不存在(404)：${res.requestOptions.uri}，请检查 baseUrl 与 loginPath。',
+      );
+    }
+    if (code == 401 || code == 403) {
+      throw AuthException('用户名或密码错误');
+    }
+    if (code < 200 || code >= 300) {
+      final msg = _extractMessage(res.data) ?? '登录失败（HTTP $code）';
+      throw AuthException(msg);
+    }
+
+    // 解析返回
+    final Map<String, dynamic> data = res.data is Map<String, dynamic>
+        ? (res.data as Map<String, dynamic>)
+        : (res.data is String
+              ? jsonDecode(res.data as String) as Map<String, dynamic>
+              : <String, dynamic>{});
+
+    // 兼容常见字段名
+    String? tok =
+        (data['token'] ?? data['access_token'] ?? data['jwt']) as String?;
+    Map<String, dynamic>? usr;
+    if (data['user'] is Map) {
+      usr = (data['user'] as Map).cast<String, dynamic>();
+    } else if (data['data'] is Map) {
+      final d = (data['data'] as Map).cast<String, dynamic>();
+      tok = (tok ?? d['token'] ?? d['access_token'] ?? d['jwt']) as String?;
+      if (d['user'] is Map) usr = (d['user'] as Map).cast<String, dynamic>();
+    }
+
+    if (tok == null) {
+      throw AuthException(
+        '登录成功但未返回 token，请检查接口字段（token / access_token / jwt）。',
+      );
+    }
+
+    _token = tok;
+    _user = usr ?? {'username': username};
+
+    _dio.options.headers['Authorization'] = 'Bearer $_token';
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kTokenKey, _token!);
+    await prefs.setString(_kUserKey, jsonEncode(_user));
+
+    notifyListeners();
   }
 
   /// 登出：清空缓存和头部
